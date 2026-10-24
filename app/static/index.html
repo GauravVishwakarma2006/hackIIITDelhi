@@ -36,9 +36,10 @@
             <option value="28.5870,77.3489">📍 Noida Sec 18 (NCR)</option>
           </select>
         </div>
-        <div class="location-pill" id="location-pill">
-          <span class="live-beacon"></span>
-          <span id="location-text">📍 Okhla, New Delhi (IIIT-D GPS)</span>
+        <div class="location-pill clickable" id="location-pill" title="Click to refresh current GPS location" onclick="fetchCurrentLocation(true)">
+          <span class="live-beacon" id="live-beacon"></span>
+          <span id="location-text">📍 Detecting your location...</span>
+          <button type="button" class="pill-refresh-btn" aria-label="Refresh GPS">🔄</button>
         </div>
         <select id="lang-select" class="lang-selector">
           <option value="auto">🌐 Language: Auto-Detect</option>
@@ -117,6 +118,19 @@
               <div class="bubble-note">(Hello! I am CareCompass. Please describe what care or symptoms you need help with.)</div>
             </div>
           </div>
+        </div>
+
+        <!-- Live Sender Location Strip -->
+        <div class="sender-location-strip" id="sender-location-strip">
+          <div class="sender-loc-main">
+            <span class="sender-loc-icon">📍</span>
+            <span class="sender-loc-label">Sending message from:</span>
+            <span class="sender-loc-value" id="sender-coords-text">Detecting current GPS...</span>
+          </div>
+          <button type="button" class="loc-detect-btn" id="loc-detect-btn" onclick="fetchCurrentLocation(true)" title="Take current GPS location">
+            <span class="btn-icon">🎯</span>
+            <span class="btn-text">Detect GPS</span>
+          </button>
         </div>
 
         <!-- Voice & Input Deck -->

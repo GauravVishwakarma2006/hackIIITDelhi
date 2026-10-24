@@ -27,8 +27,132 @@ const emergencyWhatsAppBtn = document.getElementById("emergency-whatsapp-share-b
 
 // Conversation & Patient State
 let conversationHistory = [];
-let patientLocation = { lat: 28.5445, lng: 77.2725 }; // Default IIIT-Delhi Okhla
+const DEFAULT_LOCATION = { lat: 28.5445, lng: 77.2725 }; // IIIT-Delhi Okhla benchmark
+let patientLocation = { ...DEFAULT_LOCATION };
 let lastAssessmentText = "";
+let isDetectingLocation = false;
+let locationAcquired = false;
+let locationStatus = "pending"; // 'pending' | 'success' | 'denied' | 'error'
+let locationAddress = "";
+
+// Geolocation UI Synchronization
+function updateLocationUI(status, coords, areaName) {
+  const locText = document.getElementById("location-text");
+  const senderCoords = document.getElementById("sender-coords-text");
+  const liveBeacon = document.getElementById("live-beacon");
+  const detectBtn = document.getElementById("loc-detect-btn");
+
+  const isProxy = document.getElementById("proxy-mode-toggle")?.checked;
+  if (isProxy) {
+    if (senderCoords) senderCoords.innerHTML = `<span style="color: #0369A1;">Proxy Mode (Selected Location)</span>`;
+    return;
+  }
+
+  if (status === "detecting") {
+    if (locText) locText.textContent = "📍 Detecting current GPS location...";
+    if (senderCoords) senderCoords.textContent = "Detecting current GPS coordinates...";
+    if (liveBeacon) liveBeacon.className = "live-beacon searching";
+    if (detectBtn) detectBtn.classList.add("loading");
+    return;
+  }
+
+  if (detectBtn) detectBtn.classList.remove("loading");
+
+  if (status === "success" && coords) {
+    const latStr = coords.lat.toFixed(4);
+    const lngStr = coords.lng.toFixed(4);
+    const label = areaName ? `${areaName} (${latStr}, ${lngStr})` : `GPS: ${latStr}, ${lngStr}`;
+
+    if (locText) locText.textContent = `📍 ${label}`;
+    if (senderCoords) senderCoords.innerHTML = `<strong>${label}</strong> <span style="color:#16A34A;font-size:11px;">(Verified GPS)</span>`;
+    if (liveBeacon) liveBeacon.className = "live-beacon";
+  } else {
+    // Fallback or permission denied
+    const defaultLabel = "Okhla, New Delhi (Default Benchmark)";
+    if (locText) locText.textContent = `📍 ${defaultLabel} · Click to retry`;
+    if (senderCoords) senderCoords.innerHTML = `<span>${defaultLabel}</span> <span style="color:#94A3B8;font-size:11px;">(Default)</span>`;
+    if (liveBeacon) liveBeacon.className = "live-beacon fallback";
+  }
+}
+
+// Reverse Geocoding helper (OpenStreetMap Nominatim with 2s timeout)
+async function reverseGeocode(lat, lng) {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 2000);
+    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=14`, {
+      signal: controller.signal,
+      headers: { "Accept": "application/json" }
+    });
+    clearTimeout(timeoutId);
+    if (!res.ok) return null;
+    const data = await res.json();
+    const address = data.address || {};
+    const locality = address.suburb || address.neighbourhood || address.residential || address.city_district || address.town || address.city;
+    const state = address.state;
+    if (locality) {
+      return state ? `${locality}, ${state}` : locality;
+    }
+    return data.name || null;
+  } catch {
+    return null;
+  }
+}
+
+// Fetch current GPS location of whoever is going to message
+async function fetchCurrentLocation(userInitiated = false) {
+  const isProxy = document.getElementById("proxy-mode-toggle")?.checked;
+  if (isProxy) {
+    changePatientLocation();
+    return patientLocation;
+  }
+
+  if (!navigator.geolocation) {
+    if (userInitiated) {
+      alert("Geolocation is not supported by your browser. Using default Delhi coordinates.");
+    }
+    locationStatus = "error";
+    updateLocationUI("error", null);
+    return patientLocation;
+  }
+
+  updateLocationUI("detecting");
+  isDetectingLocation = true;
+
+  return new Promise((resolve) => {
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        patientLocation = { lat, lng };
+        locationAcquired = true;
+        locationStatus = "success";
+        isDetectingLocation = false;
+
+        try {
+          const area = await reverseGeocode(lat, lng);
+          locationAddress = area || "";
+          updateLocationUI("success", patientLocation, area);
+        } catch {
+          updateLocationUI("success", patientLocation, null);
+        }
+        resolve(patientLocation);
+      },
+      (err) => {
+        console.warn("Geolocation permission or timeout:", err.message);
+        locationStatus = "denied";
+        isDetectingLocation = false;
+        updateLocationUI("denied", null);
+        resolve(patientLocation);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 8000,
+        maximumAge: 30000
+      }
+    );
+  });
+}
 
 // 1. Family / Proxy Mode Handlers
 function toggleProxyMode() {
@@ -43,14 +167,25 @@ function toggleProxyMode() {
   } else {
     drawer.classList.add("hidden");
     locPill.classList.remove("hidden");
-    patientLocation = { lat: 28.5445, lng: 77.2725 };
+    if (locationAcquired) {
+      updateLocationUI("success", patientLocation, locationAddress);
+    } else {
+      fetchCurrentLocation(false);
+    }
   }
 }
 
 function changePatientLocation() {
-  const val = document.getElementById("proxy-location-select").value;
+  const select = document.getElementById("proxy-location-select");
+  const val = select.value;
   const [lat, lng] = val.split(",").map(Number);
   patientLocation = { lat, lng };
+
+  const senderCoords = document.getElementById("sender-coords-text");
+  if (senderCoords) {
+    const text = select.selectedOptions[0]?.text || "Selected Location";
+    senderCoords.innerHTML = `<span style="color: #0369A1;">${text}</span>`;
+  }
 }
 
 // 2. Browser-Native Speech Recognition (Hindi / Hinglish / English)
@@ -117,6 +252,20 @@ async function handleSend() {
   const text = userInput.value.trim();
   if (!text) return;
 
+  // Ensure current location of whoever is going to message is captured
+  const isProxy = document.getElementById("proxy-mode-toggle")?.checked;
+  if (!isProxy && !locationAcquired && !isDetectingLocation) {
+    try {
+      // Race fetchCurrentLocation with quick 1.5s timeout so send is not delayed
+      await Promise.race([
+        fetchCurrentLocation(false),
+        new Promise((resolve) => setTimeout(resolve, 1500))
+      ]);
+    } catch (e) {
+      console.warn("Location capture timeout:", e);
+    }
+  }
+
   // Add User Message to UI
   appendMessage("user", text);
   userInput.value = "";
@@ -157,6 +306,21 @@ userInput.addEventListener("keydown", (e) => {
   if (e.key === "Enter" && !e.shiftKey) {
     e.preventDefault();
     handleSend();
+  }
+});
+
+// Proactively acquire current location as soon as the user interacts with input
+userInput.addEventListener("focus", () => {
+  const isProxy = document.getElementById("proxy-mode-toggle")?.checked;
+  if (!isProxy && !locationAcquired && !isDetectingLocation) {
+    fetchCurrentLocation(false);
+  }
+});
+
+userInput.addEventListener("input", () => {
+  const isProxy = document.getElementById("proxy-mode-toggle")?.checked;
+  if (!isProxy && !locationAcquired && !isDetectingLocation) {
+    fetchCurrentLocation(false);
   }
 });
 
@@ -334,4 +498,13 @@ function openBookingModal(name, role, slot) {
 
 function closeModal() {
   document.getElementById("booking-modal").classList.add("hidden");
+}
+
+// Automatically acquire current location of whoever is going to message
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", () => {
+    fetchCurrentLocation(false);
+  });
+} else {
+  fetchCurrentLocation(false);
 }
