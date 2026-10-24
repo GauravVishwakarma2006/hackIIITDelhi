@@ -1,80 +1,119 @@
-# 🛰️ HackIIITDelhi: Autonomous Internship & Opportunity Radar
+# 🧭 CareCompass: AI-Powered Care Navigation & Caregiver Matching
+> **Hack IIITD — Centre for Artificial Intelligence (CAI), IIIT-Delhi**  
+> **Track**: AI for Healthcare Access  
+> **Problem Statement**: Understand what a patient needs and connect them to the right caregiver, quickly and safely.
 
-An intelligent web-agent system built for **Hack IIIT Delhi**, powered by [TinyFish](https://tinyfish.ai). It autonomously discovers, browses, and extracts structured internship, job, and hackathon opportunities across company career pages with precision schema validation.
-
----
-
-## ⚡ Features
-
-- **Autonomous Web Navigation**: TinyFish agents dynamically scroll, click, and inspect modern career portals (JavaScript-rendered, SPA, and bot-protected sites).
-- **Parallel Multi-Agent Scraping**: Concurrently queries multiple career destinations (Jane Street, Google Careers, Microsoft Careers, Razorpay, etc.) using `AsyncTinyFish`.
-- **Dynamic Search Discovery**: Integrates TinyFish search to proactively query the web for freshly posted opportunities and automatically dispatches worker agents to target pages.
-- **Strict JSON Schema Output**: Guarantees deterministic role metadata:
-  - Role Title
-  - Company / Source
-  - Location
-  - Remote vs On-site status
-  - Application Deadline
-  - Direct Application Link
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Python 3.12](https://img.shields.io/badge/Python-3.12-brightgreen.svg)](https://python.org)
+[![FastAPI](https://img.shields.io/badge/API-FastAPI-009688.svg)](https://fastapi.tiangolo.com/)
 
 ---
 
-## 🛠️ Tech Stack
+## 📌 Problem Overview
+Patients and families often struggle to navigate healthcare options:
+- **Over-triage**: Patients crowd emergency rooms for minor ailments manageable via home visits or teleconsultations.
+- **Under-triage**: Critical red-flag signs (e.g., chest pain, respiratory distress) are delayed or overlooked.
+- **Language Barrier**: Millions communicate symptoms in colloquial Hindi or Hinglish (*"Papa ko do din se bukhar hai aur khansi bhi"*).
+- **Matching Friction**: Caregiver dispatch lacks multi-criteria optimization across clinical skill, distance, language fluency, and real-time availability.
 
-- **Agent Orchestration**: TinyFish SDK (`tinyfish` >= 0.11.0)
-- **Runtime**: Python 3.12+ / `asyncio`
-- **Configuration**: `python-dotenv`
+**CareCompass** provides a safety-first, multilingual triage pipeline and multi-constraint caregiver matching engine with an accessible voice-enabled interface.
 
 ---
 
-## 🚀 Getting Started
+## 🏛️ System Architecture
 
-### 1. Clone the repository
-```bash
-git clone https://github.com/GauravVishwakarma2006/hackIIITDelhi.git
-cd hackIIITDelhi
+CareCompass operates across three tightly integrated modules:
+
+1. **Module 1: Multilingual Smart Intake**  
+   Accepts free text or voice input in English, Hindi, and Hinglish. Asks 2 to 4 targeted clinical follow-up questions to clarify symptom duration, severity, and patient context.
+2. **Module 2: Safety-First Triage Engine**  
+   Deterministic red-flag safety gate + clinical classification engine to route patients into:
+   - `emergency` (Immediate escalation with 108 emergency call guidance)
+   - `paramedic_home_visit` (Vitals check, acute febrile illness, elderly care)
+   - `nurse` (Wound dressing, IV/injection, catheter care)
+   - `gp_teleconsult` (Routine respiratory, mild complaints, follow-up)
+   - `specialist` (Cardiology, neurology, orthopedics, chronic disease)
+3. **Module 3: Multi-Criteria Caregiver Matcher**  
+   Ranks nearby available caregivers using an objective scoring function:
+   $$\text{Score} = w_{\text{skill}} \cdot S_{\text{skill}} + w_{\text{dist}} \cdot S_{\text{distance}} + w_{\text{lang}} \cdot S_{\text{language}} + w_{\text{rate}} \cdot S_{\text{rating}} + w_{\text{slot}} \cdot S_{\text{slot}}$$
+   Every recommendation includes clear, explainable reasoning in plain language.
+
+---
+
+## 📂 Repository Structure
+
+```
+├── docs/
+│   └── TRACK1_BLUEPRINT.md    # Track 1: System flow, clinical architecture & API contract
+├── app/
+│   ├── api/                   # REST API following IIITD CAI JSON schema
+│   ├── engine/                # Clinical triage, red flag rules & Hinglish NLP
+│   ├── matcher/               # Geodesic multi-criteria caregiver ranking
+│   └── static/                # Accessible, voice-enabled web demo
+├── data/
+│   └── caregivers.json        # Synthetic caregiver database (Delhi NCR)
+├── radar.py                   # TinyFish autonomous web discovery & scraping engine
+├── requirements.txt           # Python dependencies
+├── Dockerfile                 # Containerized deployment
+└── README.md                  # Project overview & quickstart
 ```
 
-### 2. Set up Virtual Environment & Install Dependencies
+---
+
+## ⚡ Quickstart
+
+### 1. Setup Environment
 ```bash
 python -m venv .venv
-# Windows PowerShell:
+# On Windows:
 .venv\Scripts\Activate.ps1
-# Linux / macOS:
+# On Linux/macOS:
 source .venv/bin/activate
 
 pip install -r requirements.txt
 ```
 
-### 3. Configure API Key
-Create a `.env` file in the root directory (copied from `.env.example`):
+### 2. Configure API Keys
 ```bash
-TINYFISH_API_KEY=your_tinyfish_api_key_here
+cp .env.example .env
+# Edit .env with your keys (e.g. TINYFISH_API_KEY)
+```
+
+### 3. Run the API Server & Demo
+```bash
+python -m app.main
+```
+Visit `http://localhost:8000` to interact with the conversational triage interface.
+
+---
+
+## 📜 Official API Contract (IIITD CAI)
+
+### Endpoint: `POST /api/v1/triage`
+**Request Payload**:
+```json
+{
+  "user_input": "papa ko do din se bukhar hai aur khansi bhi",
+  "language": "auto",
+  "location": { "lat": 28.54, "lng": 77.27 },
+  "conversation_history": []
+}
+```
+
+**Response Payload**:
+```json
+{
+  "follow_up_question": "Kya unko saans lene me dikkat ya tez seene me dard ho raha hai?",
+  "care_type": null,
+  "urgency": null,
+  "red_flags": [],
+  "reasoning": "Clarifying respiratory distress before finalizing care pathway.",
+  "matched_caregivers": []
+}
 ```
 
 ---
 
-## 💻 Running the Stages
-
-### Stage 1: Single-Agent Inspection
-Runs a single autonomous agent on Jane Street open roles:
-```bash
-python radar.py 1
-```
-
-### Stage 2: Parallel Multi-Target Agent Scrape
-Dispatches parallel worker agents to scrape top tech careers in concurrent sessions and compiles `internships.json`:
-```bash
-python radar.py 2
-```
-
-### Stage 3: Autonomous Web Search & Agent Dispatch
-Uses free TinyFish search discovery to find fresh 2026 internship postings across the web, then dispatches agents to extract structured data:
-```bash
-python radar.py 3
-```
-
----
-
-## 🔒 Security Note
-API keys and secrets are protected via `.gitignore` and must **never** be committed to source control.
+## 👥 Authors & Team
+- **Gaurav Vishwakarma** — Team Lead / AI & Systems Engineering
+- Built for **Hack IIITD (CAI, IIIT-Delhi)**
