@@ -147,3 +147,58 @@ def get_emergency_protocol(red_flags: List[str], user_lang: str = "auto") -> str
         f"Red-flag symptoms detected ({flags_formatted}); immediately routed to national emergency services "
         f"(Helpline 112 / Ambulance 108), not home care. Matching caregivers is strictly skipped for patient safety."
     )
+
+
+# Observer / Guard Mode Flags (Answering the Mentor Edge-Case)
+OBSERVER_FLAGS = [
+    "darwaza nahi khol rahe", "phone nahi utha rahe", "behosh lag rahe hain",
+    "door not opening", "not answering calls", "lying on floor",
+    "gate nahi khol rahe", "darwaza band hai", "awaaz nahi de rahe", "koi halchal nahi"
+]
+
+OBSERVER_REGEXES = [
+    r"\b(?:darwaza|gate)\s*nahi\s*khol\s*rah[a-z]*\b",
+    r"\b(?:phone|call)\s*nahi\s*utha\s*rah[a-z]*\b",
+    r"\b(?:behosh\s*lag\s*rah[a-z]*|lying\s*on\s*(?:the\s*)?floor|jameen\s*pe\s*pad[ae]\s*hai)\b",
+    r"\b(?:door\s*not\s*opening|won'?t\s*open\s*(?:the\s*)?door|door\s*is\s*locked)\b",
+    r"\b(?:not\s*answering\s*calls?|not\s*picking\s*up(?:\s*the\s*phone)?)\b",
+    r"\b(?:koi\s*halchal\s*nahi|no\s*movement|unresponsive\s*inside)\b",
+    r"(?:दरवाजा\s*नहीं\s*खोल|फोन\s*नहीं\s*उठा|जमीन\s*पर\s*पड़े|बेहोश\s*लग\s*रहे|कोई\s*हलचल\s*नहीं)"
+]
+
+
+def check_observer_alert(text: str) -> Tuple[bool, str]:
+    """
+    Observer / Guard Mode check:
+    Detects third-party emergency reports from neighbors, society guards, or distant family.
+    Bypasses intake questions and dispatches immediate welfare check & paramedic.
+    """
+    clean = text.lower().strip()
+    for kw in OBSERVER_FLAGS:
+        if kw in clean:
+            return True, f"Observer Alert: Third-party distress report ('{kw}'). Immediate welfare check and emergency dispatch initiated."
+    for r_pat in OBSERVER_REGEXES:
+        if re.search(r_pat, clean, re.IGNORECASE):
+            return True, "Observer Alert: Welfare distress signs detected. Immediate paramedic dispatch and emergency check initiated."
+    return False, ""
+
+
+def evaluate_safety_and_vulnerability(text: str) -> Dict[str, Any]:
+    """
+    Unified evaluator interface used by evaluate.py benchmark runner.
+    """
+    is_em, red_flags = detect_red_flags(text)
+    is_vuln, vuln_reason = check_vulnerability(text)
+    is_obs, obs_reason = check_observer_alert(text)
+
+    if is_obs:
+        is_em = True
+        red_flags.append("observer_welfare_alert")
+
+    return {
+        "is_emergency": is_em,
+        "red_flags": red_flags,
+        "is_vulnerable": is_vuln,
+        "is_observer": is_obs,
+        "reason": obs_reason or vuln_reason or (get_emergency_protocol(red_flags) if is_em else "")
+    }

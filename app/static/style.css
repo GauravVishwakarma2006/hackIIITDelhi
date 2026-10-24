@@ -311,6 +311,48 @@ body {
   100% { transform: rotate(360deg); }
 }
 
+.proxy-mode-box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: white;
+  border: 1px solid var(--border-subtle);
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-headline);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s ease;
+}
+
+.proxy-mode-box.observer {
+  background: #FFFBEB;
+  border-color: #FDE68A;
+}
+
+.proxy-mode-box:hover {
+  border-color: var(--primary);
+  background: #FCFBF9;
+}
+
+.proxy-mode-box input[type="checkbox"] {
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+
+.observer-label {
+  cursor: pointer;
+  color: #B45309;
+  font-weight: 700;
+}
+
+.proxy-label {
+  cursor: pointer;
+}
+
 .lang-selector {
   background: white;
   border: 1px solid var(--border-subtle);
@@ -334,15 +376,30 @@ body {
    ========================================================================== */
 .bento-scenarios {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
   margin-bottom: 28px;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1200px) {
   .bento-scenarios {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
   }
+}
+
+@media (max-width: 768px) {
+  .bento-scenarios {
+    grid-template-columns: 1fr;
+  }
+}
+
+.scenario-card.observer-card:hover {
+  border-color: #F59E0B;
+}
+
+.tag-observer {
+  background: #FEF3C7;
+  color: #B45309;
 }
 
 .scenario-card {

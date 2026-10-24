@@ -21,9 +21,13 @@
         </div>
       </div>
       <div class="nav-actions">
+        <div class="proxy-mode-box observer" title="Padosi ya Guard reporting for isolated elderly">
+          <input type="checkbox" id="observer-mode-toggle" onchange="toggleObserverMode()">
+          <label for="observer-mode-toggle" class="observer-label">👮‍♂️ Observer Mode</label>
+        </div>
         <div class="proxy-mode-box">
           <input type="checkbox" id="proxy-mode-toggle" onchange="toggleProxyMode()">
-          <label for="proxy-mode-toggle" class="proxy-label">👨‍👩‍👧 Family Proxy Mode</label>
+          <label for="proxy-mode-toggle" class="proxy-label">👨‍👩‍👧 Family Proxy</label>
         </div>
         <div id="proxy-location-container" class="proxy-location-drawer hidden">
           <label style="font-size: 11.5px; font-weight: 700; color: var(--primary);">Patient Location:</label>
@@ -71,6 +75,17 @@
           <p class="sc-sub">Zero-tolerance red-flag trigger with 112 emergency routing.</p>
         </div>
         <span class="sc-tag">Emergency 112</span>
+      </div>
+
+      <div class="scenario-card observer-card" onclick="applyPrompt('Dadi darwaza nahi khol rahi hain aur phone nahi utha rahi, padosi reporting')">
+        <div>
+          <div class="sc-header">
+            <span class="sc-icon">👮‍♂️</span>
+            <span class="sc-title">Guard / Observer Alert</span>
+          </div>
+          <p class="sc-sub">Unresponsive elder, door locked. Immediate welfare paramedic dispatch.</p>
+        </div>
+        <span class="sc-tag tag-observer">Welfare Dispatch</span>
       </div>
 
       <div class="scenario-card" onclick="applyPrompt('Doctor prescribed an injection, can someone come home')">

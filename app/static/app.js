@@ -154,7 +154,25 @@ async function fetchCurrentLocation(userInitiated = false) {
   });
 }
 
-// 1. Family / Proxy Mode Handlers
+// 1. Observer & Family Proxy Mode Handlers
+function toggleObserverMode() {
+  const isObs = document.getElementById("observer-mode-toggle").checked;
+  const senderCoords = document.getElementById("sender-coords-text");
+  if (isObs) {
+    if (senderCoords) {
+      senderCoords.innerHTML = `<span style="color: #B45309; font-weight: 800;">👮‍♂️ Observer / Guard Mode Active (Welfare Reporting)</span>`;
+    }
+    userInput.placeholder = "Padosi ya guard reporting: e.g. Dadi darwaza nahi khol rahi hain aur phone nahi utha rahi...";
+  } else {
+    userInput.placeholder = "Bol kar ya likh kar batayein... (e.g. Papa ko bukhar hai)";
+    if (locationAcquired) {
+      updateLocationUI("success", patientLocation, locationAddress);
+    } else {
+      fetchCurrentLocation(false);
+    }
+  }
+}
+
 function toggleProxyMode() {
   const isProxy = document.getElementById("proxy-mode-toggle").checked;
   const drawer = document.getElementById("proxy-location-container");

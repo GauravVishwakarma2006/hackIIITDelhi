@@ -33,11 +33,23 @@ def classify_triage(
             f"Red-flag symptoms detected ({flags_str}); immediately routed to Emergency Helpline 112 / 108. Home care skipped."
         )
 
+    # 1.5. Explicit Virtual / Teleconsultation Request
+    explicit_tele = [
+        "teleconsultation", "teleconsult", "doctor appointment", "virtual consult",
+        "doctor se consult", "doctor se baat", "consult a doctor"
+    ]
+    if any(k in text for k in explicit_tele) and not any(k in text for k in ["injection", "catheter", "dressing", "sample"]):
+        return (
+            CareType.TELECONSULTATION.value,
+            UrgencyLevel.SAME_DAY.value,
+            "Virtual doctor teleconsultation requested; urgency assessed as same_day."
+        )
+
     # 2. Lab Test Home (Sample collection, CBC, Thyroid, Blood Sugar, Full body checkup)
     lab_keywords = [
-        "checkup", "चेकअप", "sample", "सैंपल", "cbc", "सीबीसी", "thyroid", "थायराइड",
+        "full body checkup", "sample", "सैंपल", "cbc", "सीबीसी", "thyroid", "थायराइड",
         "sugar test", "शुगर टेस्ट", "blood sugar test", "sugar test ghar pe", "full body",
-        "blood test", "रक्त जांच", "urine test", "lipid profile", "kft", "lft", "hba1c"
+        "blood test", "रक्त जांच", "urine test", "lipid profile", "kft", "lft", "hba1c", "lab test"
     ]
     if any(k in text for k in lab_keywords):
         urgency = UrgencyLevel.SAME_DAY.value if is_vulnerable else UrgencyLevel.SCHEDULED.value
@@ -99,3 +111,17 @@ def classify_triage(
         UrgencyLevel.SAME_DAY.value,
         "Non-urgent clinical inquiry suitable for virtual doctor consultation; urgency assessed as same_day."
     )
+
+
+def classify_routine_care(user_input: str) -> dict:
+    """
+    Standard interface used by evaluate.py benchmark evaluator.
+    Returns: {"care_type": str, "urgency": str, "reasoning": str}
+    """
+    care_type, urgency, reasoning = classify_triage(user_input, is_emergency=False, red_flags=[])
+    return {
+        "care_type": care_type,
+        "urgency": urgency,
+        "reasoning": reasoning
+    }
+

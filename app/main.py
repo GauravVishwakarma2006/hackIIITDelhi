@@ -5,13 +5,14 @@ Conforms strictly to the Hack IIITD (CAI, IIIT-Delhi) API contract and evaluatio
 
 import os
 import re
-from fastapi import FastAPI, HTTPException
+import time
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 
-from app.schemas import TriageRequest, TriageResponse
-from app.engine.red_flags import detect_red_flags, get_emergency_protocol
+from app.schemas import TriageRequest, TriageResponse, Location
+from app.engine.red_flags import detect_red_flags, get_emergency_protocol, check_observer_alert
 from app.engine.intake import determine_follow_up
 from app.engine.triage import classify_triage
 from app.matcher.ranking import rank_caregivers
@@ -32,6 +33,19 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.middleware("http")
+async def add_process_time_header(request: Request, call_next):
+    """
+    Sub-50ms Response Latency Proof:
+    Attaches X-Process-Time execution timer header in milliseconds.
+    """
+    start_time = time.perf_counter()
+    response = await call_next(request)
+    process_time = (time.perf_counter() - start_time) * 1000
+    response.headers["X-Process-Time"] = f"{process_time:.2f}ms"
+    return response
 
 
 def detect_language(text: str) -> str:
@@ -65,6 +79,17 @@ async def emergency_facilities(lat: float = 28.5445, lng: float = 77.2725):
     """
     facilities = await fetch_live_emergency_facilities(Location(lat=lat, lng=lng))
     return {"facilities": facilities}
+
+
+@app.get("/emergency/live-contacts")
+@app.get("/api/v1/emergency/live-contacts")
+def emergency_live_contacts(area: str = "South Delhi"):
+    """
+    TinyFish Autonomous Web Agent (Shiv Chopra / Ignite Room / TinyFish Ambassador, IIIT-Delhi).
+    Extracts live government hospital emergency desk phone and ICU status.
+    """
+    from app.tinyfish_agent import fetch_live_emergency_contacts
+    return fetch_live_emergency_contacts(area=area)
 
 
 @app.post("/triage", response_model=TriageResponse)
@@ -102,6 +127,18 @@ def triage_endpoint(request: TriageRequest) -> TriageResponse:
             urgency="emergency",
             red_flags=list(set(red_flags)),
             reasoning=emergency_reason,
+            matched_caregivers=[]
+        )
+
+    # Step 1B: Observer / Guard Mode Alert (Padosi / Guard third-party distress)
+    is_observer, obs_reason = check_observer_alert(user_text)
+    if is_observer:
+        return TriageResponse(
+            follow_up_question=None,
+            care_type="paramedic_home_visit",
+            urgency="emergency",
+            red_flags=["observer_welfare_alert"],
+            reasoning=obs_reason,
             matched_caregivers=[]
         )
 

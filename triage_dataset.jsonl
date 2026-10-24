@@ -1,0 +1,92 @@
+{"case_id": "EM_001", "user_input": "Chest pain and pressure radiating to left arm", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_002", "user_input": "severe chest pain since 20 minutes", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_003", "user_input": "patient having sudden cardiac arrest like symptoms", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_004", "user_input": "sharp angina pain in chest", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_005", "user_input": "सीने में तेज दर्द हो रहा है और घबराहट है", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_006", "user_input": "छाती में बहुत ज्यादा भारीपन और दर्द है", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_007", "user_input": "दादाजी को दिल का दौरा पड़ा है", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_008", "user_input": "पापा को हार्ट अटैक आया है जल्दी मदद करो", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_009", "user_input": "seene me tez dard hai aur paseena aa raha hai", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_010", "user_input": "chhati me dard aur jalan ho rahi hai", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_011", "user_input": "sine me bahut pressure mehsoos ho raha hai", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_012", "user_input": "chest me severe dard ho raha hai", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_013", "user_input": "Severe breathlessness, unable to speak complete words", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_014", "user_input": "Asthma attack, can't breathe at all", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_015", "user_input": "patient gasping for air and suffocating", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_016", "user_input": "acute respiratory distress in elderly patient", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_017", "user_input": "सांस बिल्कुल नहीं आ रही है दम घुट रहा है", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_018", "user_input": "सांस लेने में बहुत तकलीफ हो रही है", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_019", "user_input": "सांस फूल रही है और होंठ नीले पड़ रहे हैं", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_020", "user_input": "saans lene me bahut dikkat ho rahi hai", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_021", "user_input": "saans phool rahi hai bol nahi pa rahe", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_022", "user_input": "dam ghut raha hai jaldi oxygen chahiye", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_023", "user_input": "saas nahi aa rahi bohot pareshani hai", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_024", "user_input": "Severe uncontrolled bleeding from leg after accident", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_025", "user_input": "Patient coughing large amounts of blood", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_026", "user_input": "Vomiting fresh blood continuously", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_027", "user_input": "Arterial profuse bleeding not stopping with pressure", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_028", "user_input": "खून बहुत तेजी से बह रहा है रुक नहीं रहा", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_029", "user_input": "खून की उल्टी हुई है बहुत ज्यादा", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_030", "user_input": "एक्सीडेंट के बाद सिर से भारी रक्तस्राव हो रहा है", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_031", "user_input": "accident ke baad bleeding ruk nahi rahi hai", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_032", "user_input": "khoon nikal raha hai patti lagane par bhi nahi ruk raha", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_033", "user_input": "khoon ki ulti ho gayi achanak", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_034", "user_input": "sir phat gaya aur bahut khoon beh raha hai", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_035", "user_input": "Person collapsed and is completely unresponsive", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_036", "user_input": "Grandfather passed out and is not responding to calls", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_037", "user_input": "Sudden fainting with loss of consciousness", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_038", "user_input": "दादी अचानक गिर गईं और कोई जवाब नहीं दे रही हैं", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_039", "user_input": "मरीज बेहोश हो गया है कोई प्रतिक्रिया नहीं है", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_040", "user_input": "होश नहीं है आंखें नहीं खोल रहे", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_041", "user_input": "wo achanak gir gaye aur response nahi de rahe", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_042", "user_input": "behosh ho gaye hain hosh nahi aa raha", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_043", "user_input": "sudden collapse, awaaz nahi de rahe", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_044", "user_input": "gir gaya aur bol nahi raha", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_045", "user_input": "Sudden facial drooping and slurred speech", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_046", "user_input": "Patient unable to speak and arm is paralyzed", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_047", "user_input": "Acute stroke symptoms, one side completely numb", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_048", "user_input": "चेहरा टेढ़ा हो गया है और आवाज लड़खड़ा रही है", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_049", "user_input": "अचानक लकवा मार गया है बोल नहीं पा रहे", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_050", "user_input": "chehra tedha ho gaya aur bol nahi pa rahe", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_051", "user_input": "falij ka attack lag raha hai aadha shareer sunn hai", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_052", "user_input": "lakwa ho gaya bolna band ho gaya", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_053", "user_input": "Major car accident on highway with deep head injury", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_054", "user_input": "Bike accident, severe head trauma with bleeding", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_055", "user_input": "सड़क पर गंभीर दुर्घटना हुई है सिर में गहरी चोट है", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_056", "user_input": "गाड़ी से जोरदार टक्कर हुई है सर फट गया", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_057", "user_input": "road accident ho gaya sarr par gehri chot aayi", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_058", "user_input": "bura accident ho gaya jaldi ambulance bhejo", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_059", "user_input": "Patient having continuous epileptic seizure fits", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_060", "user_input": "मरीज को मिरगी का दौरा पड़ रहा है शरीर अकड़ गया है", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_061", "user_input": "daura pad gaya jhatke aa rahe hain", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_062", "user_input": "Severe anaphylaxis reaction, throat closing up", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_063", "user_input": "गंभीर एलर्जी हो गई है गला सूज गया सांस बंद है", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_064", "user_input": "anaphylaxis se gale me sujan ho gayi saans ruk rahi hai", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_065", "user_input": "Child accidentally swallowed bathroom chemical poison", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_066", "user_input": "जहर खा लिया है तुरंत इमरजेंसी मदद चाहिए", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_067", "user_input": "zahar kha liya hai jaldi doctor ya hospital chahiye", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_068", "user_input": "severe acid burn over face and chest", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "EM_069", "user_input": "buri tarah jal gaye hain aag lag gayi thi", "urgency": "emergency", "care_type": "emergency_112"}
+{"case_id": "OBS_001", "user_input": "Dadi darwaza nahi khol rahe hain aur phone nahi utha rahe", "urgency": "emergency", "care_type": "paramedic_home_visit"}
+{"case_id": "OBS_002", "user_input": "Grandmother is not opening door and not answering calls", "urgency": "emergency", "care_type": "paramedic_home_visit"}
+{"case_id": "OBS_003", "user_input": "padosi behosh lag rahe hain jameen pe pade hai koi halchal nahi", "urgency": "emergency", "care_type": "paramedic_home_visit"}
+{"case_id": "NURS_001", "user_input": "Doctor prescribed an injection, can someone come home", "urgency": "same_day", "care_type": "home_nursing"}
+{"case_id": "NURS_002", "user_input": "Grandmother has a bedsore that needs dressing", "urgency": "same_day", "care_type": "home_nursing"}
+{"case_id": "NURS_003", "user_input": "Insulin drip aur catheter change karwana hai ghar par", "urgency": "same_day", "care_type": "home_nursing"}
+{"case_id": "NURS_004", "user_input": "Post-surgery wound dressing karwane ke liye nurse chahiye", "urgency": "same_day", "care_type": "home_nursing"}
+{"case_id": "NURS_005", "user_input": "Ghar pe patti badalwani hai aur injection lagwana hai", "urgency": "same_day", "care_type": "home_nursing"}
+{"case_id": "PARA_001", "user_input": "Papa ko do din se bukhar hai aur khansi bhi", "urgency": "same_day", "care_type": "paramedic_home_visit"}
+{"case_id": "PARA_002", "user_input": "mummy ka bp sugar ghar pe check karwana hai", "urgency": "same_day", "care_type": "paramedic_home_visit"}
+{"case_id": "PARA_003", "user_input": "Dadaji bahut weak feel kar rahe hain vitals check karwane hain", "urgency": "same_day", "care_type": "paramedic_home_visit"}
+{"case_id": "PARA_004", "user_input": "Ghar pe akela hoon, uth nahi pa raha aur bukhar hai 5 din se", "urgency": "same_day", "care_type": "paramedic_home_visit"}
+{"case_id": "PARA_005", "user_input": "Dadi ko vomiting ho rahi hai aur dizziness hai ghar pe checkup chahiye", "urgency": "same_day", "care_type": "paramedic_home_visit"}
+{"case_id": "LAB_001", "user_input": "Book a full body checkup, home collection", "urgency": "scheduled", "care_type": "lab_test_home"}
+{"case_id": "LAB_002", "user_input": "Lipid profile aur blood sugar test ke liye sample collection karwana hai", "urgency": "scheduled", "care_type": "lab_test_home"}
+{"case_id": "LAB_003", "user_input": "Thyroid test aur CBC blood test ghar se collect karwana hai", "urgency": "scheduled", "care_type": "lab_test_home"}
+{"case_id": "LAB_004", "user_input": "Doctor asked for HbA1c and KFT urine test home sample", "urgency": "scheduled", "care_type": "lab_test_home"}
+{"case_id": "LAB_005", "user_input": "Ghar par aakar blood test ka sample lene ke liye phlebotomist chahiye", "urgency": "scheduled", "care_type": "lab_test_home"}
+{"case_id": "TELE_001", "user_input": "Mild acidity and gas since morning, want to consult a doctor", "urgency": "same_day", "care_type": "teleconsultation"}
+{"case_id": "TELE_002", "user_input": "Reports aa gayi hain doctor se consult karke report dikhani hai", "urgency": "same_day", "care_type": "teleconsultation"}
+{"case_id": "TELE_003", "user_input": "Minor skin rash on arm and cold, need second opinion from a doctor", "urgency": "same_day", "care_type": "teleconsultation"}
+{"case_id": "TELE_004", "user_input": "Doctor se baat karni hai dawaai change karwane ke liye", "urgency": "same_day", "care_type": "teleconsultation"}
+{"case_id": "TELE_005", "user_input": "Halka bukhar aur acidity hai teleconsultation doctor appointment chahiye", "urgency": "same_day", "care_type": "teleconsultation"}
