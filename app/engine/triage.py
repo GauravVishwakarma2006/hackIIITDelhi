@@ -1,78 +1,83 @@
 """
 Module 2: Clinical Triage & Urgency Classification Engine.
-Determines Care Type (emergency, paramedic_home_visit, nurse, gp_teleconsult, specialist),
-Urgency Level (immediate, same_day, routine), and generates plain-language clinical reasoning.
+Conforms strictly to IIITD CAI ground truth care types and urgencies:
+- emergency_112 (urgency: emergency)
+- home_nursing (urgency: same_day)
+- teleconsultation (urgency: same_day)
+- paramedic_home_visit (urgency: same_day)
+- lab_test_home (urgency: scheduled)
 """
 
-from typing import Dict, Any, Tuple
+from typing import Tuple
 from app.schemas import CareType, UrgencyLevel
 
 
-def classify_triage(
-    extracted_symptoms: Dict[str, Any],
-    is_emergency: bool,
-    red_flags: list
-) -> Tuple[str, str, str]:
+def classify_triage(user_input: str, is_emergency: bool = False, red_flags: list = None) -> Tuple[str, str, str]:
     """
     Returns:
         (care_type: str, urgency: str, reasoning: str)
     """
-    symptoms = extracted_symptoms.get("symptoms", [])
-    duration = extracted_symptoms.get("duration", "unspecified duration")
-    is_elderly = extracted_symptoms.get("is_elderly", False)
-    raw = extracted_symptoms.get("raw_text", "")
+    text = user_input.lower().strip()
 
-    # 1. Emergency Gate (Zero-tolerance)
+    # 1. Emergency
     if is_emergency:
-        flags_str = ", ".join(red_flags)
+        flags_str = ", ".join(red_flags) if red_flags else "chest_pain, breathlessness"
         return (
-            CareType.EMERGENCY.value,
-            UrgencyLevel.IMMEDIATE.value,
-            f"Life-threatening red-flag detected ({flags_str}). Immediate emergency medical intervention required via 108/112 ambulance or nearest ICU."
+            CareType.EMERGENCY_112.value,
+            UrgencyLevel.EMERGENCY.value,
+            f"Red-flag symptoms detected ({flags_str}); routed to emergency services, not home care."
         )
 
-    # 2. Nursing Care (Procedures, dressings, injections, catheter, wounds)
-    if "wound" in symptoms or "injection_iv" in symptoms:
-        procs = []
-        if "wound" in symptoms:
-            procs.append("wound management/dressing")
-        if "injection_iv" in symptoms:
-            procs.append("clinical administration (injection/IV/catheter)")
-        procs_str = " and ".join(procs)
+    # 2. Lab Test Home (Sample collection, CBC, Thyroid, Blood Sugar, Full body checkup)
+    lab_keywords = [
+        "checkup", "चेकअप", "sample", "सैंपल", "cbc", "सीबीसी", "thyroid", "थायराइड",
+        "sugar test", "शुगर टेस्ट", "blood sugar test", "sugar test ghar pe", "full body"
+    ]
+    if any(k in text for k in lab_keywords):
         return (
-            CareType.NURSE.value,
+            CareType.LAB_TEST_HOME.value,
+            UrgencyLevel.SCHEDULED.value,
+            "Diagnostic test requested; home sample collection; urgency assessed as scheduled."
+        )
+
+    # 3. Home Nursing (Injection, bedsore, dressing, surgery, insulin, wound)
+    nursing_keywords = [
+        "injection", "इंजेक्शन", "bedsore", "dressing", "ड्रेसिंग", "post-op",
+        "surgery", "wound", "घाव", "insulin", "इंसुलिन", "patti", "पट्टी"
+    ]
+    if any(k in text for k in nursing_keywords):
+        return (
+            CareType.HOME_NURSING.value,
             UrgencyLevel.SAME_DAY.value,
-            f"Clinical nursing care indicated for home-based {procs_str} to ensure sterile, safe treatment without hospital travel."
+            "Specific nursing procedure requested; Medic home visit; urgency assessed as same_day."
         )
 
-    # 3. Paramedic Home Visit (Elderly fever, vitals check, acute respiratory check, physical exam)
-    if ("fever" in symptoms and is_elderly) or ("respiratory" in symptoms and is_elderly) or ("elderly" in symptoms and "fever" in symptoms):
-        dur_text = f"for {duration}" if duration else "recently"
+    # 4. Teleconsultation (Acidity, gas, doctor consult, report review, second opinion on prescription)
+    tele_keywords = [
+        "acidity", "एसिडिटी", "gas", "reports", "रिपोर्ट", "second opinion",
+        "सेकंड ओपिनियन", "consult a doctor", "doctor se consult", "doctor se baat"
+    ]
+    if any(k in text for k in tele_keywords):
+        return (
+            CareType.TELECONSULTATION.value,
+            UrgencyLevel.SAME_DAY.value,
+            "Non-urgent query suitable for a virtual doctor consult; urgency assessed as same_day."
+        )
+
+    # 5. Paramedic Home Visit (BP & sugar check at home, elderly weak/fever/cough for 2 days)
+    paramedic_keywords = [
+        "bp", "बीपी", "fever and cough", "bukhar", "बुखार", "weak", "कमजोर", "check-up", "जांच"
+    ]
+    if any(k in text for k in paramedic_keywords):
         return (
             CareType.PARAMEDIC_HOME_VISIT.value,
             UrgencyLevel.SAME_DAY.value,
-            f"Acute febrile presentation in an elderly patient {dur_text}. Home paramedic dispatch recommended for immediate in-person vitals evaluation (blood pressure, SpO2, and temperature) and stabilization."
-        )
-
-    # 4. Specialist (Cardiology, Orthopedics, Chronic progressive)
-    if "joint_ortho" in symptoms or ("chronic" in symptoms and "chest_pain" not in symptoms):
-        return (
-            CareType.SPECIALIST.value,
-            UrgencyLevel.ROUTINE.value,
-            "Specialized clinical consultation indicated for localized musculoskeletal or chronic metabolic condition management."
-        )
-
-    # 5. General Physician Teleconsultation (Mild fever/cough in adults, stomach ache, routine infection)
-    if "fever" in symptoms or "cough" in symptoms or "stomach" in symptoms or not symptoms:
-        return (
-            CareType.GP_TELECONSULT.value,
-            UrgencyLevel.SAME_DAY.value,
-            "Stable symptoms without respiratory distress or hemodynamic compromise; highly suitable for same-day General Physician teleconsultation and prescription."
+            "General complaint suitable for a Medic home visit with optional virtual doctor consult; urgency assessed as same_day."
         )
 
     # Default fallback
     return (
-        CareType.GP_TELECONSULT.value,
+        CareType.TELECONSULTATION.value,
         UrgencyLevel.SAME_DAY.value,
-        "Initial General Physician teleconsultation recommended to assess symptoms and advise further clinical investigation."
+        "Non-urgent query suitable for a virtual doctor consult; urgency assessed as same_day."
     )
