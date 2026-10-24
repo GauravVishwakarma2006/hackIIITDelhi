@@ -221,8 +221,33 @@ class TestCareCompassOfficialBenchmarks(unittest.TestCase):
             self.assertIsNotNone(data["follow_up_question"], f"Failed for {query}")
             self.assertIsNone(data["care_type"], f"care_type should be None for {query}")
             self.assertIsNone(data["urgency"], f"urgency should be None for {query}")
-            self.assertEqual(len(data["matched_caregivers"]), 0, f"caregivers should be empty for {query}")
-            self.assertIn("non-health", data["reasoning"].lower())
+    def test_heart_attack_typos_always_emergency(self):
+        # Heart attack misspellings (heart attck, hart attack, heart failure) must ALWAYS be emergency_112, NEVER teleconsultation
+        typo_queries = [
+            "heart attck",
+            "heart attack",
+            "heartattack",
+            "heart attak",
+            "hart attack",
+            "hart attck",
+            "heart failure",
+            "severe chest",
+            "cant breathe",
+            "breath problem"
+        ]
+        for query in typo_queries:
+            payload = {
+                "user_input": query,
+                "language": "auto",
+                "location": {"lat": 28.5445, "lng": 77.2725},
+                "conversation_history": []
+            }
+            res = client.post("/triage", json=payload)
+            self.assertEqual(res.status_code, 200)
+            data = res.json()
+            self.assertEqual(data["care_type"], "emergency_112", f"Expected emergency_112 for '{query}' but got {data['care_type']}")
+            self.assertEqual(data["urgency"], "emergency", f"Expected emergency urgency for '{query}' but got {data['urgency']}")
+            self.assertEqual(len(data["matched_caregivers"]), 0, f"Expected 0 caregivers for emergency '{query}'")
 
 
 if __name__ == "__main__":

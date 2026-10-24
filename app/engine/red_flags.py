@@ -12,34 +12,35 @@ from typing import List, Tuple, Dict, Any
 # Note: Devanagari patterns intentionally do NOT use \b word boundaries
 RED_FLAG_REGEXES = {
     "chest_pain": [
-        r"(?:seene|sine|chhati|chest)\b.{0,30}\b(?:dard|pain|pressure|dabav|tightness|heaviness|jalan)",
+        r"(?:seene|sine|chhati|chest)\b.{0,30}\b(?:dard|pain|pressure|dabav|tightness|heaviness|jalan|ache|discomfort)",
         r"(?:सीने|छाती).{0,30}(?:दर्द|भारीपन|दबाव|जलन)",
-        r"\b(?:heart\s*attack|cardiac\s*arrest|angina|heart\s*pain|dil\s*ka\s*daura)\b",
-        r"(?:दिल\s*का\s*दौरा|हार्ट\s*अटैक|सीने\s*में\s*दर्द)"
+        r"\b(?:h[ea]{1,2}rt\s*att?[a-z]*k|cardiac\s*arrest|cardiac\s*emergency|cardiac|heart\s*failure|heart\s*pain|heart\s*problem|heart\s*issue|angina|dil\s*ka\s*daura|dil\s*me\s*dard|coronary|myocardial)\b",
+        r"\b(?:chest\s*pain|chestpain|severe\s*chest|chest\s*pressure|chest\s*tightness)\b",
+        r"(?:दिल\s*का\s*दौरा|हार्ट\s*अटैक|सीने\s*में\s*दर्द|छाती\s*में\s*दर्द)"
     ],
     "breathing_difficulty": [
-        r"(?:saans|sans|saas)\b.{0,30}\b(?:nahi|phool|dikkat|takleef|pareshani|problem|ruk|ghut|kam)",
+        r"(?:saans|sans|saas)\b.{0,30}\b(?:nahi|phool|dikkat|takleef|pareshani|problem|ruk|ghut|kam|tez)",
         r"(?:सांस|साँस).{0,30}(?:नहीं|फूल|दिक्कत|तकलीफ|परेशानी|रुक|घुट|कम|बंद)",
         r"\b(?:breathlessness|shortness\s*of\s*breath|can'?t\s*breathe|cannot\s*breathe|unable\s*to\s*breathe)\b",
-        r"\b(?:gasping|suffocating|choking|respiratory\s*distress|asthma\s*attack)\b",
-        r"\b(?:dam\s*ghut|oxygen\s*chahiye)\b",
-        r"(?:दम\s*घुट|सांस\s*नहीं)"
+        r"\b(?:gasping|suffocating|choking|respiratory\s*distress|asthma\s*attack|breathing\s*problem|breath\s*problem|difficulty\s*breathing)\b",
+        r"\b(?:dam\s*ghut|oxygen\s*chahiye|low\s*oxygen)\b",
+        r"(?:दम\s*घुट|सांस\s*नहीं|सांस\s*फूल)"
     ],
     "severe_bleeding": [
-        r"(?:bleeding|khoon)\b.{0,30}\b(?:ruk\s*nahi|nahi\s*ruk|band\s*nahi|nikal|beh|bahut|heavy|loss|ulti|vomit|cough)",
+        r"(?:bleeding|khoon)\b.{0,30}\b(?:ruk\s*nahi|nahi\s*ruk|band\s*nahi|nikal|beh|bahut|heavy|loss|ulti|vomit|cough|profuse)",
         r"(?:रक्त|खून).{0,30}(?:नहीं\s*रुक|रुक\s*नहीं|बंद\s*नहीं|उल्टी|निकल|बह|भारी)",
         r"(?:coughing|vomiting|cough|vomit)\b.{0,25}\bblood\b",
         r"\bblood\b.{0,25}\b(?:loss|vomit|cough|uncontrolled)\b",
-        r"\b(?:severe\s*bleeding|uncontrolled\s*bleeding|heavy\s*blood|vomiting\s*blood|coughing\s*blood|profuse\s*bleeding)\b",
+        r"\b(?:severe\s*bleeding|uncontrolled\s*bleeding|heavy\s*blood|vomiting\s*blood|coughing\s*blood|profuse\s*bleeding|bleeding\s*a\s*lot)\b",
         r"(?:खून\s*की\s*उल्टी|रक्तस्राव|खून\s*नहीं\s*रुक|खून\s*बहुत)"
     ],
     "unconsciousness": [
-        r"\b(?:unconscious|passed\s*out|fainted|collapsed|unresponsive|not\s*responding|loss\s*of\s*consciousness)\b",
+        r"\b(?:unconscious|passed\s*out|fainted|fainting|collapsed|unresponsive|not\s*responding|not\s*waking\s*up|loss\s*of\s*consciousness)\b",
         r"\b(?:behosh|behoshi|gir\s*gaye|gir\s*gaya|response\s*nahi|jawab\s*nahi|hosh\s*nahi|sudh\s*budh|awaaz\s*nahi\s*de|bol\s*nahi\s*rah)\b",
         r"(?:बेहोश|बेहोशी|मूर्खित|मूर्छित|अचेत|कोई\s*प्रतिक्रिया\s*नहीं|होश\s*नहीं|जवाब\s*नहीं\s*दे|आंखें\s*नहीं\s*खोल)"
     ],
     "stroke_symptoms": [
-        r"\b(?:stroke|paraly[sz]|facial\s*droop|slurred\s*speech|face\s*droop|one\s*side\s*weakness|unable\s*to\s*speak)\b",
+        r"\b(?:stroke|paraly[sz]|paralytic|facial\s*droop|slurred\s*speech|face\s*droop|one\s*side\s*weakness|unable\s*to\s*speak)\b",
         r"\b(?:lakwa|falij|chehra\s*tedha|bol\s*nahi\s*pa|aadha\s*shareer|awaaz\s*ladkhada|bolna\s*band)\b",
         r"(?:लकवा|फालिज|स्ट्रोक|चेहरा\s*टेढ़ा|बोल\s*नहीं\s*पा|आवाज\s*लड़खड़ा)"
     ],
@@ -49,7 +50,7 @@ RED_FLAG_REGEXES = {
         r"(?:गंभीर\s*दुर्घटना|एक्सीडेंट|सिर\s*में\s*गहरी\s*चोट|सर\s*फट|गाड़ी\s*से\s*टक्कर)"
     ],
     "seizures": [
-        r"\b(?:seizure|convulsions|fits|epileptic|involuntary\s*shaking)\b",
+        r"\b(?:seizure|seizures|convulsions|fits|epileptic|involuntary\s*shaking)\b",
         r"\b(?:daure?|mirgi|jhatke\s*aa\s*rahe|fits\s*pad\s*rahe|shareer\s*akad)\b",
         r"(?:दौरे?|मिरगी|झटके\s*आ\s*रहे|शरीर\s*अकड़)"
     ],
@@ -67,15 +68,33 @@ RED_FLAG_REGEXES = {
 
 # Individual word list fallback
 RED_FLAG_PATTERNS = {
-    "chest_pain": ["chest pain", "seene me dard", "सीने में दर्द", "chhati me dard", "heart attack", "छाती में"],
-    "breathing_difficulty": ["breathlessness", "saans nahi", "saans phool", "सांस नहीं", "can't breathe", "dam ghut"],
-    "severe_bleeding": ["bleeding", "khoon", "खून"],
-    "unconsciousness": ["unconscious", "behosh", "बेहोश", "gir gaye", "not responding", "होश नहीं"],
-    "stroke_symptoms": ["stroke", "lakwa", "लकवा", "paralysis", "chehra tedha"],
-    "severe_trauma": ["accident", "head injury", "एक्सीडेंट"],
-    "seizures": ["seizure", "daure", "दौरे", "fits"],
-    "severe_allergic_reaction": ["anaphylaxis", "severe allergy", "एलर्जी"],
-    "poisoning_burns": ["poison", "zehar", "जहर", "chemical burn"]
+    "chest_pain": [
+        "chest pain", "chestpain", "seene me dard", "सीने में दर्द", "chhati me dard", "छाती में दर्द",
+        "heart attack", "heart attck", "heartattack", "heart attak", "hart attack", "hart attck", "heartattck",
+        "cardiac arrest", "cardiac emergency", "cardiac", "angina", "heart pain", "heart failure",
+        "heart problem", "severe chest", "dil ka daura", "हार्ट अटैक", "दिल का दौरा"
+    ],
+    "breathing_difficulty": [
+        "breathlessness", "saans nahi", "saans phool", "सांस नहीं", "can't breathe", "cant breathe",
+        "cannot breathe", "dam ghut", "breathing problem", "breath problem", "shortness of breath",
+        "asthma attack", "difficulty breathing", "choking", "suffocating"
+    ],
+    "severe_bleeding": [
+        "severe bleeding", "heavy bleeding", "bleeding profusely", "vomiting blood", "coughing blood",
+        "bleeding", "khoon", "खून", "khoon ki ulti", "khoon nahi ruk"
+    ],
+    "unconsciousness": [
+        "unconscious", "unresponsive", "passed out", "fainted", "fainting", "collapsed", "not responding",
+        "not waking up", "behosh", "behoshi", "gir gaye", "होश नहीं", "बेहोश"
+    ],
+    "stroke_symptoms": [
+        "stroke", "paralysis", "paralytic", "lakwa", "लकवा", "facial droop", "face droop",
+        "slurred speech", "chehra tedha"
+    ],
+    "severe_trauma": ["accident", "head injury", "major accident", "car crash", "bike accident", "एक्सीडेंट"],
+    "seizures": ["seizure", "seizures", "convulsions", "daure", "दौरे", "fits"],
+    "severe_allergic_reaction": ["anaphylaxis", "severe allergy", "throat swelling", "एलर्जी"],
+    "poisoning_burns": ["poison", "poisoning", "zehar", "zahar", "जहर", "chemical burn", "acid burn"]
 }
 
 # Vulnerability & Isolation Signals (Mentor-Answering Edge Cases)

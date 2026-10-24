@@ -133,7 +133,19 @@ def triage_endpoint(request: TriageRequest) -> TriageResponse:
             matched_caregivers=[]
         )
 
-    # Step 1B: Observer / Guard Mode Alert (Padosi / Guard third-party distress)
+    # Step 1B: Clinical Domain Guard (Reject non-health queries like math, quadratic equation, code, trivia)
+    is_health, non_health_msg = check_health_domain(user_text, detected_lang)
+    if not is_health:
+        return TriageResponse(
+            follow_up_question=non_health_msg,
+            care_type=None,
+            urgency=None,
+            red_flags=[],
+            reasoning="Invalid input: Non-health query detected — CareCompass strictly handles healthcare symptoms and care navigation.",
+            matched_caregivers=[]
+        )
+
+    # Step 2: Observer / Guard Mode Alert (Padosi / Guard third-party distress)
     is_observer, obs_reason = check_observer_alert(user_text)
     if is_observer:
         return TriageResponse(
@@ -145,7 +157,7 @@ def triage_endpoint(request: TriageRequest) -> TriageResponse:
             matched_caregivers=[]
         )
 
-    # Step 2: Check if targeted clinical follow-up is needed (underspecified queries)
+    # Step 3: Check if targeted clinical follow-up is needed (underspecified queries)
     follow_up = determine_follow_up(user_text, request.conversation_history)
     if follow_up:
         return TriageResponse(
@@ -157,7 +169,7 @@ def triage_endpoint(request: TriageRequest) -> TriageResponse:
             matched_caregivers=[]
         )
 
-    # Step 3: Final Clinical Triage Classification
+    # Step 4: Final Clinical Triage Classification
     # Concatenate prior user turns with user_input so follow-up turns retain full clinical context
     full_context = user_text
     if request.conversation_history:
@@ -165,15 +177,15 @@ def triage_endpoint(request: TriageRequest) -> TriageResponse:
         if past_turns:
             full_context = f"{past_turns} {user_text}"
 
-    # Step 2B: Clinical Domain Guard (Reject non-health queries like math, quadratic equation, code, trivia)
-    is_health, non_health_msg = check_health_domain(full_context, detected_lang)
-    if not is_health:
+    # Also double check domain on full_context
+    is_health_full, non_health_msg_full = check_health_domain(full_context, detected_lang)
+    if not is_health_full:
         return TriageResponse(
-            follow_up_question=non_health_msg,
+            follow_up_question=non_health_msg_full,
             care_type=None,
             urgency=None,
             red_flags=[],
-            reasoning="Non-health query detected — CareCompass strictly handles healthcare symptoms and care navigation.",
+            reasoning="Invalid input: Non-health query detected — CareCompass strictly handles healthcare symptoms and care navigation.",
             matched_caregivers=[]
         )
 

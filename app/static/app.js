@@ -947,8 +947,31 @@ function renderResponse(data) {
   lastTriageData = data;
   const dict = getDict();
 
-  // Case A: Follow-up question needed (Underspecified)
+  // Case A: Follow-up question needed (Underspecified) or Domain Guard rejection
   if (data.follow_up_question) {
+    const isDomainRejection = (data.reasoning && (data.reasoning.toLowerCase().includes("non-health") || data.reasoning.toLowerCase().includes("invalid input"))) ||
+      data.follow_up_question.includes("⚠️") ||
+      data.follow_up_question.toLowerCase().includes("invalid input");
+
+    if (isDomainRejection) {
+      appendMessage("assistant", data.follow_up_question);
+      conversationHistory.push({ role: "assistant", content: data.follow_up_question });
+      lastAssessmentText = data.follow_up_question;
+      speakAssessment();
+
+      // Cleanly reset the right panel to show Invalid Input message
+      emergencyBanner.classList.add("hidden");
+      caregiversContainer.classList.add("hidden");
+      triageCard.classList.add("hidden");
+      emptyState.classList.remove("hidden");
+
+      const emptyTitleEl = emptyState.querySelector("h3");
+      const emptySubEl = emptyState.querySelector("p");
+      if (emptyTitleEl) emptyTitleEl.textContent = "⚠️ Invalid Input / Non-Medical Query";
+      if (emptySubEl) emptySubEl.innerHTML = "CareCompass only navigates healthcare symptoms & caregiver dispatch.<br>Non-medical queries (like <strong>2+2</strong>, <strong>quadratic equations</strong>, coding, or trivia) cannot be triaged.<br><br>👉 <em>Please describe a health concern (e.g. Papa has fever, chest pain, dressing, doctor consultation).</em>";
+      return;
+    }
+
     const localizedFollowUp = getLocalizedFollowUp(data.follow_up_question, currentLanguage);
     appendMessage("assistant", localizedFollowUp);
     conversationHistory.push({ role: "assistant", content: localizedFollowUp });

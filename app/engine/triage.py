@@ -24,7 +24,14 @@ def classify_triage(
     text = user_input.lower().strip()
     is_vulnerable, vuln_reason = check_vulnerability(text)
 
-    # 1. Emergency Path (Red flags triggered)
+    # 1. Emergency Path (Red flags triggered or detected in text)
+    if not is_emergency:
+        from app.engine.red_flags import detect_red_flags
+        has_flags, detected = detect_red_flags(text)
+        if has_flags:
+            is_emergency = True
+            red_flags = detected
+
     if is_emergency:
         flags_str = ", ".join(red_flags) if red_flags else "critical emergency symptoms"
         return (

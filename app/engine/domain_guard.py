@@ -119,22 +119,19 @@ def get_domain_rejection_message(detected_lang: str) -> str:
     """Returns friendly out-of-domain guidance in the user's active language."""
     if detected_lang == "Hindi":
         return (
-            "नमस्ते! मैं CareCompass हूँ, आपका स्वास्थ्य एवं देखभाल मार्गदर्शक। "
-            "मैं गणित, सामान्य ज्ञान या गैर-चिकित्सीय प्रश्नों के बजाय केवल बीमारी के लक्षणों, "
-            "डॉक्टर परामर्श, होम नर्सिंग, लैब टेस्ट या आपातकालीन सहायता में मदद कर सकता हूँ। "
-            "कृपया अपनी स्वास्थ्य समस्या या लक्षण बताएं।"
+            "⚠️ अमान्य इनपुट (Invalid Input): CareCompass केवल स्वास्थ्य एवं देखभाल मार्गदर्शन के लिए है। "
+            "गणित (जैसे 2+2, समीकरण), सामान्य ज्ञान या गैर-चिकित्सीय प्रश्नों के बजाय कृपया अपनी स्वास्थ्य समस्या, लक्षण या देखभाल आवश्यकता बताएं "
+            "(जैसे: बुखार, सीने में दर्द, ड्रेसिंग, लैब टेस्ट, या डॉक्टर परामर्श)।"
         )
     elif detected_lang == "Hinglish":
         return (
-            "Namaste! Main CareCompass hoon, aapka healthcare assistant. "
-            "Main maths ya non-medical sawalon ke bajaye sirf health symptoms, "
-            "doctor consultation, home nursing, lab tests ya emergency care me madad kar sakta hoon. "
-            "Kripya apni health problem ya symptom batayein."
+            "⚠️ Invalid Input: CareCompass sirf healthcare aur care navigation ke liye hai. "
+            "Maths (jaise 2+2, quadratic equations) ya non-medical queries ke bajaye kripya apni health problem ya symptoms batayein "
+            "(e.g. bukhar, chest pain, injection, doctor consult)."
         )
     else: # English / auto
         return (
-            "Hello! I am CareCompass, an AI care navigation assistant. "
-            "I can only assist with healthcare needs such as medical symptoms, home nursing, "
-            "lab tests, doctor consults, or emergency care. "
+            "⚠️ Invalid Input: CareCompass is strictly designed for healthcare triage and care navigation. "
+            "Non-medical queries (such as math equations like 2+2, quadratic equations, coding, or trivia) cannot be triaged. "
             "Please describe a health concern or symptom so I can help."
         )
