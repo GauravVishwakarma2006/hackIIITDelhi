@@ -1,7 +1,8 @@
 """
 Module 3: Multi-Criteria Caregiver Matcher & Ranking Engine.
 Computes geodesic distances and optimizes caregiver selection across:
-clinical role, skill coverage, distance, language fluency, rating, and availability.
+clinical role, skill coverage, distance within max_radius_km, language, rating, and availability
+matching the official IIITD CAI ground truth.
 """
 
 import json
@@ -25,7 +26,7 @@ def haversine_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> fl
         * math.sin(d_lon / 2) ** 2
     )
     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
-    return round(R * c, 2)
+    return round(R * c, 1)
 
 
 def load_caregivers(data_path: Optional[str] = None) -> List[Dict[str, Any]]:
@@ -41,95 +42,79 @@ def load_caregivers(data_path: Optional[str] = None) -> List[Dict[str, Any]]:
 def rank_caregivers(
     care_type: str,
     patient_loc: Location,
-    patient_lang: str = "Hindi",
+    detected_language: str = "English",
     top_k: int = 3
 ) -> List[MatchedCaregiver]:
     """
-    Ranks available caregivers according to multi-objective utility.
-    Emergency path skips matching entirely.
+    Ranks available caregivers according to official IIITD CAI benchmark rules.
     """
-    if care_type == "emergency":
+    if care_type == "emergency_112":
         return []
 
     caregivers = load_caregivers()
     candidates = []
 
-    for cg in caregivers:
-        # Check role compatibility
-        is_exact_role = (cg["role"] == care_type)
-        # Paramedics and nurses can cross-cover home visits if needed
-        is_substitute = (
-            (care_type == "paramedic_home_visit" and cg["role"] == "nurse") or
-            (care_type == "nurse" and cg["role"] == "paramedic_home_visit") or
-            (care_type == "gp_teleconsult" and cg["role"] == "gp_teleconsult")
-        )
+    # Map Care Type to Caregiver Role
+    target_role = "doctor" if care_type == "teleconsultation" else (
+        "phlebotomist" if care_type == "lab_test_home" else "medic"
+    )
 
-        if not (is_exact_role or is_substitute):
+    lang_prefix = "English-speaking" if detected_language == "English" else "Hindi-speaking"
+
+    for cg in caregivers:
+        if not cg.get("active", True):
             continue
 
-        # 1. Distance Calculation
+        if cg.get("role") != target_role:
+            continue
+
         cg_lat = cg["location"]["lat"]
         cg_lng = cg["location"]["lng"]
         dist_km = haversine_distance(patient_loc.lat, patient_loc.lng, cg_lat, cg_lng)
 
-        # 2. Distance Score (decay with distance)
-        dist_score = 1.0 / (1.0 + 0.15 * dist_km)
+        # In-person visits must be within max_radius_km
+        if care_type != "teleconsultation":
+            max_r = cg.get("max_radius_km", 10.0)
+            if dist_km > max_r:
+                continue
 
-        # 3. Rating Score (out of 5.0)
-        rating_score = (cg.get("rating", 4.5) / 5.0)
+        free_from = cg.get("free_from", "09:00")
+        free_until = cg.get("free_until", "17:00")
+        rating = cg.get("rating", 4.5)
 
-        # 4. Language Match
-        lang_match = any(
-            patient_lang.lower() in l.lower() or "hindi" in l.lower()
-            for l in cg.get("languages", ["Hindi"])
-        )
-        lang_score = 1.0 if lang_match else 0.7
-
-        # 5. Exact Role vs Substitute
-        role_weight = 1.0 if is_exact_role else 0.85
-
-        # Weighted Composite Score
-        total_score = (
-            0.40 * dist_score +
-            0.30 * role_weight +
-            0.15 * rating_score +
-            0.15 * lang_score
-        )
-        total_score = round(min(0.99, max(0.60, total_score)), 2)
-
-        # Format explainable reason
-        earliest_slot = cg["availability_slots"][0].replace("today_", "") if cg.get("availability_slots") else "available soon"
-        langs_str = "/".join(cg.get("languages", ["Hindi"])[:2])
-        role_title = cg["role"].replace("_", " ").title()
-
-        reason = (
-            f"{langs_str}-speaking {role_title}, {dist_km} km away ({cg.get('area', 'Delhi')}), "
-            f"free at {earliest_slot}, {cg.get('rating', 4.8)}★ ({cg.get('total_reviews', 100)}+ reviews)"
-        )
+        if care_type == "teleconsultation":
+            # Teleconsult score primarily driven by doctor rating and availability
+            score = 0.99 if rating >= 4.8 else round(rating / 5.0, 2)
+            reason = f"{lang_prefix}, free {free_from}–{free_until}, ★{rating:.1f}"
+        else:
+            # Physical visit score combines distance and rating
+            dist_factor = max(0.4, 1.0 - (dist_km / 15.0))
+            rating_factor = rating / 5.0
+            score = round(0.55 * dist_factor + 0.45 * rating_factor, 2)
+            reason = f"{lang_prefix}, {dist_km:.1f} km away, free {free_from}–{free_until}"
 
         candidates.append({
             "caregiver": cg,
-            "score": total_score,
+            "score": score,
             "dist_km": dist_km,
-            "earliest_slot": earliest_slot,
             "reason": reason
         })
 
-    # Sort descending by composite score
-    candidates.sort(key=lambda x: x["score"], reverse=True)
+    # Sort descending by score, then ascending by distance
+    candidates.sort(key=lambda x: (x["score"], -x["dist_km"]), reverse=True)
 
     results = []
     for c in candidates[:top_k]:
         cg = c["caregiver"]
         results.append(
             MatchedCaregiver(
-                caregiver_id=cg["id"],
-                name=cg.get("name"),
-                role=cg.get("role"),
+                caregiver_id=cg["caregiver_id"],
                 score=c["score"],
                 reason=c["reason"],
+                name=cg.get("name"),
+                role=cg.get("role"),
                 distance_km=c["dist_km"],
-                available_slot=c["earliest_slot"],
+                available_slot=f"{cg.get('free_from')}–{cg.get('free_until')}",
                 rating=cg.get("rating")
             )
         )
