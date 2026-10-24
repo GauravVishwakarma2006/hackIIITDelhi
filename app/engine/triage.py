@@ -129,6 +129,17 @@ def classify_routine_care(user_input: str) -> dict:
             "follow_up_question": follow_up
         }
 
+    from app.engine.domain_guard import check_health_domain
+    is_health, rejection_msg = check_health_domain(user_input)
+    if not is_health:
+        return {
+            "care_type": None,
+            "urgency": None,
+            "reasoning": "Non-health query detected — out of medical scope.",
+            "needs_follow_up": True,
+            "follow_up_question": rejection_msg
+        }
+
     care_type, urgency, reasoning = classify_triage(user_input, is_emergency=False, red_flags=[])
     return {
         "care_type": care_type,

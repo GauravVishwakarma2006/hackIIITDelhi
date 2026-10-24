@@ -198,6 +198,33 @@ class TestCareCompassOfficialBenchmarks(unittest.TestCase):
         self.assertIn(data["urgency"], ["same_day", "emergency"])
         self.assertIn("vulnerability", data["reasoning"].lower())
 
+    def test_non_health_query_math_equation(self):
+        # Math queries like "2 + 2" or "quaderatic equation" must NOT give clinical assessment
+        test_inputs = [
+            "2 + 2",
+            "quaderatic equation",
+            "quadratic equation",
+            "solve x^2 + 5x + 6 = 0",
+            "write python code for calculator",
+            "who is the president of france"
+        ]
+        for query in test_inputs:
+            payload = {
+                "user_input": query,
+                "language": "auto",
+                "location": {"lat": 28.5445, "lng": 77.2725},
+                "conversation_history": []
+            }
+            res = client.post("/triage", json=payload)
+            self.assertEqual(res.status_code, 200)
+            data = res.json()
+            self.assertIsNotNone(data["follow_up_question"], f"Failed for {query}")
+            self.assertIsNone(data["care_type"], f"care_type should be None for {query}")
+            self.assertIsNone(data["urgency"], f"urgency should be None for {query}")
+            self.assertEqual(len(data["matched_caregivers"]), 0, f"caregivers should be empty for {query}")
+            self.assertIn("non-health", data["reasoning"].lower())
+
 
 if __name__ == "__main__":
     unittest.main()
+

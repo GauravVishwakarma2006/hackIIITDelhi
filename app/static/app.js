@@ -456,6 +456,10 @@ function getLocalizedReasoning(data, lang) {
 // Localized Follow-Up questions
 function getLocalizedFollowUp(originalQuestion, lang) {
   if (!originalQuestion) return "";
+  // If it's a domain guard rejection or already localized CareCompass message, return as is
+  if (originalQuestion.includes("गणित") || originalQuestion.includes("maths") || originalQuestion.includes("healthcare needs") || originalQuestion.includes("non-medical") || originalQuestion.includes("CareCompass")) {
+    return originalQuestion;
+  }
   if (lang === "English") return originalQuestion;
   if (lang === "Hindi") {
     return "नमस्ते! मैं आपकी सहायता के लिए तैयार हूँ। यह सेवा किसके लिए चाहिए और मुख्य समस्या क्या है — बुखार, नर्सिंग जरूरत, लैब टेस्ट, या डॉक्टर से परामर्श?";

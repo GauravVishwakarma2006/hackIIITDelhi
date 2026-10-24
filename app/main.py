@@ -14,6 +14,7 @@ from fastapi.responses import FileResponse
 from app.schemas import TriageRequest, TriageResponse, Location
 from app.engine.red_flags import detect_red_flags, get_emergency_protocol, check_observer_alert
 from app.engine.intake import determine_follow_up
+from app.engine.domain_guard import check_health_domain
 from app.engine.triage import classify_triage
 from app.matcher.ranking import rank_caregivers
 
@@ -105,6 +106,8 @@ def triage_endpoint(request: TriageRequest) -> TriageResponse:
         raise HTTPException(status_code=400, detail="user_input cannot be empty")
 
     detected_lang = detect_language(user_text)
+    if request.language and request.language.lower() != "auto":
+        detected_lang = request.language
 
     # Step 1: Zero-tolerance Clinical Red-Flag Safety Gate
     is_emergency, red_flags = detect_red_flags(user_text)
@@ -161,6 +164,18 @@ def triage_endpoint(request: TriageRequest) -> TriageResponse:
         past_turns = " ".join([t.content for t in request.conversation_history if t.role == "user" and t.content.strip()])
         if past_turns:
             full_context = f"{past_turns} {user_text}"
+
+    # Step 2B: Clinical Domain Guard (Reject non-health queries like math, quadratic equation, code, trivia)
+    is_health, non_health_msg = check_health_domain(full_context, detected_lang)
+    if not is_health:
+        return TriageResponse(
+            follow_up_question=non_health_msg,
+            care_type=None,
+            urgency=None,
+            red_flags=[],
+            reasoning="Non-health query detected — CareCompass strictly handles healthcare symptoms and care navigation.",
+            matched_caregivers=[]
+        )
 
     care_type, urgency, reasoning = classify_triage(full_context, is_emergency=False, red_flags=[])
 
