@@ -1,9 +1,10 @@
 """
 CareCompass REST API Server.
-Conforms strictly to the Hack IIITD (CAI, IIIT-Delhi) API contract.
+Conforms strictly to the Hack IIITD (CAI, IIIT-Delhi) API contract and evaluation taxonomy.
 """
 
 import os
+import re
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -11,7 +12,7 @@ from fastapi.responses import FileResponse
 
 from app.schemas import TriageRequest, TriageResponse
 from app.engine.red_flags import detect_red_flags, get_emergency_protocol
-from app.engine.intake import extract_symptoms, determine_follow_up
+from app.engine.intake import determine_follow_up
 from app.engine.triage import classify_triage
 from app.matcher.ranking import rank_caregivers
 
@@ -21,7 +22,7 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Enable CORS for frontend and external evaluators
+# Enable CORS for frontend and automated evaluators
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -29,6 +30,18 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+def detect_language(text: str) -> str:
+    """Detects whether input is Hindi (Devanagari), Hinglish, or English."""
+    if re.search(r'[\u0900-\u097F]', text):
+        return "Hindi"
+    # Basic Hinglish word heuristics
+    hinglish_markers = ["papa", "mummy", "dadi", "dadaji", "hai", "nahi", "ruk", "ghav", "chahiye", "karwana", "lagwana"]
+    lower = text.lower()
+    if any(m in lower.split() for m in hinglish_markers):
+        return "Hinglish"
+    return "English"
 
 
 @app.get("/health")
@@ -52,6 +65,8 @@ def triage_endpoint(request: TriageRequest) -> TriageResponse:
     if not user_text:
         raise HTTPException(status_code=400, detail="user_input cannot be empty")
 
+    detected_lang = detect_language(user_text)
+
     # Step 1: Zero-tolerance Clinical Red-Flag Safety Gate
     is_emergency, red_flags = detect_red_flags(user_text)
 
@@ -66,40 +81,37 @@ def triage_endpoint(request: TriageRequest) -> TriageResponse:
 
     if is_emergency:
         # Emergency path skips follow-ups and matching directly
-        emergency_reason = get_emergency_protocol(red_flags, request.language or "hi")
+        emergency_reason = get_emergency_protocol(red_flags, detected_lang)
         return TriageResponse(
             follow_up_question=None,
-            care_type="emergency",
-            urgency="immediate",
+            care_type="emergency_112",
+            urgency="emergency",
             red_flags=list(set(red_flags)),
             reasoning=emergency_reason,
             matched_caregivers=[]
         )
 
-    # Step 2: Multilingual Symptom Extraction
-    extracted = extract_symptoms(user_text)
-
-    # Step 3: Check if targeted clinical follow-up is needed
-    follow_up = determine_follow_up(user_text, request.conversation_history, extracted)
+    # Step 2: Check if targeted clinical follow-up is needed (underspecified queries)
+    follow_up = determine_follow_up(user_text, request.conversation_history)
     if follow_up:
         return TriageResponse(
             follow_up_question=follow_up,
             care_type=None,
             urgency=None,
             red_flags=[],
-            reasoning="Targeted clinical inquiry required to rule out acute severity or clarify treatment need.",
+            reasoning="Intent underspecified — asking a follow-up before deciding care type.",
             matched_caregivers=[]
         )
 
-    # Step 4: Final Clinical Triage Classification
-    care_type, urgency, reasoning = classify_triage(extracted, is_emergency=False, red_flags=[])
+    # Step 3: Final Clinical Triage Classification
+    care_type, urgency, reasoning = classify_triage(user_text, is_emergency=False, red_flags=[])
 
-    # Step 5: Multi-Criteria Caregiver Matching
+    # Step 4: Multi-Criteria Caregiver Matching
     loc = request.location
     matched = rank_caregivers(
         care_type=care_type,
         patient_loc=loc,
-        patient_lang=request.language or "Hindi",
+        detected_language=detected_lang,
         top_k=3
     )
 
