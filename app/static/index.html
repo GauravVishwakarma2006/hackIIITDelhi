@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CareCompass — AI Care Navigation & Safety-First Matching</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="logo-icon">🧭</div>
+        <div>
+          <h1>CareCompass</h1>
+          <p class="tagline">Intelligent Multilingual Care Navigation · CAI, IIIT-Delhi</p>
+        </div>
+      </div>
+      <div class="header-controls">
+        <div class="location-badge">
+          <span class="pulse-dot"></span>
+          <span id="location-text">📍 Okhla, New Delhi (IIIT-D)</span>
+        </div>
+        <select id="lang-select" class="lang-dropdown">
+          <option value="auto">🌐 Language: Auto</option>
+          <option value="Hindi">हिंदी (Hindi / Hinglish)</option>
+          <option value="English">English</option>
+        </select>
+      </div>
+    </header>
+
+    <!-- Main Content Layout -->
+    <div class="main-layout">
+      <!-- Chat & Voice Column -->
+      <section class="chat-section">
+        <div class="section-header">
+          <h2>Describe What You Need</h2>
+          <span class="subtext">Speak or type in Hindi, Hinglish, or English</span>
+        </div>
+
+        <!-- Sample Quick Prompts for Judges -->
+        <div class="quick-prompts">
+          <span class="prompt-label">Quick Scenarios:</span>
+          <button class="chip" onclick="applyPrompt('Papa ko do din se bukhar hai aur khansi bhi')">
+            👴 Papa fever & cough (Hinglish)
+          </button>
+          <button class="chip chip-danger" onclick="applyPrompt('Seene me tez dard ho raha hai aur saans phool rahi hai')">
+            🚨 Chest Pain (Emergency)
+          </button>
+          <button class="chip" onclick="applyPrompt('Dadi ke pair me ghav hai patti aur injection lagwana hai')">
+            🩹 Wound dressing (Nurse)
+          </button>
+          <button class="chip" onclick="applyPrompt('Mild headache and sore throat since morning')">
+            🩺 Routine Teleconsult (GP)
+          </button>
+        </div>
+
+        <!-- Chat Stream -->
+        <div class="messages-container" id="chat-messages">
+          <div class="message assistant-msg">
+            <div class="msg-avatar">🤖</div>
+            <div class="msg-content">
+              <strong>Namaste! Main CareCompass hoon.</strong><br>
+              Aap ya aapke parivar me kisko kya takleef hai? Aap bol kar ya likh kar bata sakte hain.
+              <div class="msg-en">(Hello! I am CareCompass. Please describe your symptoms or what care you are looking for.)</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Input Bar with Voice Support -->
+        <div class="input-bar-container">
+          <button id="mic-btn" class="mic-button" title="Click to speak">
+            <span id="mic-icon">🎤</span>
+            <span id="mic-pulse" class="mic-recording-pulse"></span>
+          </button>
+          <textarea id="user-input" rows="1" placeholder="Bol kar ya likh kar batayein... (e.g. Papa ko bukhar hai)"></textarea>
+          <button id="send-btn" class="send-button">
+            <span>Bhejein / Send</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+        <div id="mic-status" class="mic-status-label"></div>
+      </section>
+
+      <!-- Triage & Caregiver Results Column -->
+      <section class="results-section" id="results-panel">
+        <div class="section-header">
+          <h2>Clinical Triage & Caregiver Match</h2>
+          <span class="subtext">Real-time safety checks & local provider matching</span>
+        </div>
+
+        <div id="empty-state" class="empty-state">
+          <div class="empty-icon">🩺</div>
+          <h3>Awaiting Symptom Input</h3>
+          <p>Describe your condition on the left. CareCompass will evaluate clinical urgency, ensure zero-delay safety checks, and match available caregivers.</p>
+        </div>
+
+        <!-- Dynamic Triage Summary Card -->
+        <div id="triage-card" class="triage-card hidden">
+          <div class="triage-badges">
+            <span id="care-type-badge" class="badge">CARE TYPE</span>
+            <span id="urgency-badge" class="badge">URGENCY</span>
+          </div>
+          <div class="reasoning-box">
+            <h4>Clinical Assessment & Reasoning</h4>
+            <p id="triage-reasoning"></p>
+          </div>
+        </div>
+
+        <!-- Emergency Alert Banner -->
+        <div id="emergency-banner" class="emergency-banner hidden">
+          <div class="emergency-icon">🚨</div>
+          <div class="emergency-details">
+            <h3>EMERGENCY PROTOCOL ACTIVATED</h3>
+            <p id="emergency-text"></p>
+            <div class="emergency-actions">
+              <a href="tel:108" class="emergency-btn">📞 Call 108 (Ambulance)</a>
+              <a href="tel:112" class="emergency-btn btn-secondary">📞 Call 112 (National Helpline)</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Matched Caregivers List -->
+        <div id="caregivers-container" class="caregivers-container hidden">
+          <h3 class="caregivers-title">Recommended Caregivers Nearby</h3>
+          <div id="caregiver-list" class="caregiver-list"></div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- Booking Modal -->
+  <div id="booking-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>✅ Caregiver Booking Confirmed</h3>
+        <button class="close-modal" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body" id="modal-content">
+        <!-- Injected via JS -->
+      </div>
+      <div class="modal-footer">
+        <button class="primary-btn" onclick="closeModal()">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
