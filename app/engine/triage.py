@@ -1,83 +1,101 @@
 """
 Module 2: Clinical Triage & Urgency Classification Engine.
 Conforms strictly to IIITD CAI ground truth care types and urgencies:
-- emergency_112 (urgency: emergency)
-- home_nursing (urgency: same_day)
-- teleconsultation (urgency: same_day)
-- paramedic_home_visit (urgency: same_day)
-- lab_test_home (urgency: scheduled)
+- Care Types: emergency_112 | paramedic_home_visit | home_nursing | lab_test_home | teleconsultation
+- Urgency Levels: emergency | same_day | scheduled
+(Zero use of obsolete 'routine' or non-standard specialist labels).
 """
 
-from typing import Tuple
+from typing import Tuple, List
 from app.schemas import CareType, UrgencyLevel
+from app.engine.red_flags import check_vulnerability
 
 
-def classify_triage(user_input: str, is_emergency: bool = False, red_flags: list = None) -> Tuple[str, str, str]:
+def classify_triage(
+    user_input: str,
+    is_emergency: bool = False,
+    red_flags: List[str] = None
+) -> Tuple[str, str, str]:
     """
+    Classifies patient need into official Care Type, Urgency, and clinical reasoning.
     Returns:
         (care_type: str, urgency: str, reasoning: str)
     """
     text = user_input.lower().strip()
+    is_vulnerable, vuln_reason = check_vulnerability(text)
 
-    # 1. Emergency
+    # 1. Emergency Path (Red flags triggered)
     if is_emergency:
-        flags_str = ", ".join(red_flags) if red_flags else "chest_pain, breathlessness"
+        flags_str = ", ".join(red_flags) if red_flags else "critical emergency symptoms"
         return (
             CareType.EMERGENCY_112.value,
             UrgencyLevel.EMERGENCY.value,
-            f"Red-flag symptoms detected ({flags_str}); routed to emergency services, not home care."
+            f"Red-flag symptoms detected ({flags_str}); immediately routed to Emergency Helpline 112 / 108. Home care skipped."
         )
 
     # 2. Lab Test Home (Sample collection, CBC, Thyroid, Blood Sugar, Full body checkup)
     lab_keywords = [
         "checkup", "चेकअप", "sample", "सैंपल", "cbc", "सीबीसी", "thyroid", "थायराइड",
-        "sugar test", "शुगर टेस्ट", "blood sugar test", "sugar test ghar pe", "full body"
+        "sugar test", "शुगर टेस्ट", "blood sugar test", "sugar test ghar pe", "full body",
+        "blood test", "रक्त जांच", "urine test", "lipid profile", "kft", "lft", "hba1c"
     ]
     if any(k in text for k in lab_keywords):
-        return (
-            CareType.LAB_TEST_HOME.value,
-            UrgencyLevel.SCHEDULED.value,
-            "Diagnostic test requested; home sample collection; urgency assessed as scheduled."
-        )
+        urgency = UrgencyLevel.SAME_DAY.value if is_vulnerable else UrgencyLevel.SCHEDULED.value
+        reason = "Diagnostic lab test requested; home sample collection by phlebotomist; urgency assessed as scheduled."
+        if is_vulnerable:
+            reason = f"Diagnostic lab test requested. {vuln_reason}"
+        return (CareType.LAB_TEST_HOME.value, urgency, reason)
 
-    # 3. Home Nursing (Injection, bedsore, dressing, surgery, insulin, wound)
+    # 3. Home Nursing (Injection, bedsore, dressing, surgery, insulin, wound, catheter)
     nursing_keywords = [
-        "injection", "इंजेक्शन", "bedsore", "dressing", "ड्रेसिंग", "post-op",
-        "surgery", "wound", "घाव", "insulin", "इंसुलिन", "patti", "पट्टी"
+        "injection", "इंजेक्शन", "bedsore", "bed sore", "dressing", "ड्रेसिंग", "post-op",
+        "surgery", "wound", "घाव", "insulin", "इंसुलिन", "patti", "पट्टी", "catheter",
+        "कैथेटर", "iv drip", "drip lagwani", "stiches", "टांके"
     ]
     if any(k in text for k in nursing_keywords):
+        reason = "Specific nursing procedure requested; certified nurse/medic home visit; urgency assessed as same_day."
+        if is_vulnerable:
+            reason += f" {vuln_reason}"
         return (
             CareType.HOME_NURSING.value,
             UrgencyLevel.SAME_DAY.value,
-            "Specific nursing procedure requested; Medic home visit; urgency assessed as same_day."
+            reason
         )
 
-    # 4. Teleconsultation (Acidity, gas, doctor consult, report review, second opinion on prescription)
-    tele_keywords = [
-        "acidity", "एसिडिटी", "gas", "reports", "रिपोर्ट", "second opinion",
-        "सेकंड ओपिनियन", "consult a doctor", "doctor se consult", "doctor se baat"
-    ]
-    if any(k in text for k in tele_keywords):
-        return (
-            CareType.TELECONSULTATION.value,
-            UrgencyLevel.SAME_DAY.value,
-            "Non-urgent query suitable for a virtual doctor consult; urgency assessed as same_day."
-        )
-
-    # 5. Paramedic Home Visit (BP & sugar check at home, elderly weak/fever/cough for 2 days)
+    # 4. Paramedic Home Visit (BP & sugar check at home, elderly weak/fever/cough for 2 days, immobility)
     paramedic_keywords = [
-        "bp", "बीपी", "fever and cough", "bukhar", "बुखार", "weak", "कमजोर", "check-up", "जांच"
+        "bp", "बीपी", "fever", "bukhar", "बुखार", "khansi", "cough", "weak", "कमजोर",
+        "check-up", "जांच", "vitals", "vomiting", "उल्टी", "dast", "loose motion",
+        "elderly care", "walk nahi", "uth nahi", "dizziness"
     ]
-    if any(k in text for k in paramedic_keywords):
+    if any(k in text for k in paramedic_keywords) or is_vulnerable:
+        reason = "Acute symptoms/vitals check required at home; paramedic home visit assigned; urgency assessed as same_day."
+        if is_vulnerable:
+            reason = f"Acute symptoms in vulnerable patient. {vuln_reason} Paramedic home visit dispatched."
         return (
             CareType.PARAMEDIC_HOME_VISIT.value,
             UrgencyLevel.SAME_DAY.value,
-            "General complaint suitable for a Medic home visit with optional virtual doctor consult; urgency assessed as same_day."
+            reason
         )
 
-    # Default fallback
+    # 5. Teleconsultation (Acidity, gas, doctor consult, report review, second opinion on prescription)
+    tele_keywords = [
+        "acidity", "एसिडिटी", "gas", "गैस", "reports", "रिपोर्ट", "second opinion",
+        "सेकंड ओपिनियन", "consult a doctor", "doctor se consult", "doctor se baat",
+        "teleconsult", "skin rash", "minor rash", "cold", "जुकाम", "halka bukhar", "mild"
+    ]
+    if any(k in text for k in tele_keywords):
+        urgency = UrgencyLevel.SAME_DAY.value
+        reason = "Non-emergency complaint suitable for virtual doctor teleconsultation; urgency assessed as same_day."
+        return (
+            CareType.TELECONSULTATION.value,
+            urgency,
+            reason
+        )
+
+    # Default fallback: safe teleconsultation with same_day urgency
     return (
         CareType.TELECONSULTATION.value,
         UrgencyLevel.SAME_DAY.value,
-        "Non-urgent query suitable for a virtual doctor consult; urgency assessed as same_day."
+        "Non-urgent clinical inquiry suitable for virtual doctor consultation; urgency assessed as same_day."
     )

@@ -16,6 +16,8 @@ from app.engine.intake import determine_follow_up
 from app.engine.triage import classify_triage
 from app.matcher.ranking import rank_caregivers
 
+from app.tinyfish_agent import fetch_live_emergency_facilities
+
 app = FastAPI(
     title="CareCompass API",
     description="AI-powered care navigation and safety-first caregiver matching (Hack IIITD - CAI)",
@@ -37,7 +39,7 @@ def detect_language(text: str) -> str:
     if re.search(r'[\u0900-\u097F]', text):
         return "Hindi"
     # Basic Hinglish word heuristics
-    hinglish_markers = ["papa", "mummy", "dadi", "dadaji", "hai", "nahi", "ruk", "ghav", "chahiye", "karwana", "lagwana"]
+    hinglish_markers = ["papa", "mummy", "dadi", "dadaji", "hai", "nahi", "ruk", "ghav", "chahiye", "karwana", "lagwana", "bhi", "ko"]
     lower = text.lower()
     if any(m in lower.split() for m in hinglish_markers):
         return "Hinglish"
@@ -54,6 +56,18 @@ def health_check():
     }
 
 
+@app.get("/emergency/facilities")
+@app.get("/api/v1/emergency/facilities")
+async def emergency_facilities(lat: float = 28.5445, lng: float = 77.2725):
+    """
+    Decoupled live emergency directory. Returns verified 24x7 trauma centers
+    without blocking triage execution.
+    """
+    facilities = await fetch_live_emergency_facilities(Location(lat=lat, lng=lng))
+    return {"facilities": facilities}
+
+
+@app.post("/triage", response_model=TriageResponse)
 @app.post("/api/v1/triage", response_model=TriageResponse)
 def triage_endpoint(request: TriageRequest) -> TriageResponse:
     """

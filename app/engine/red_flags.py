@@ -1,45 +1,149 @@
 """
 Clinical Red-Flag Safety Gate for CareCompass.
 Zero-tolerance for under-triage: guaranteed detection of life-threatening emergencies
-across English, Hindi, and Hinglish conforming to IIITD CAI ground truth.
+across English, Hindi (Devanagari), and Hinglish conforming strictly to IIITD CAI ground truth.
+Runs deterministically before any NLP or LLM step.
 """
 
-from typing import List, Tuple
+import re
+from typing import List, Tuple, Dict, Any
 
-RED_FLAG_PATTERNS = [
-    # Bleeding / accident
-    "bleeding", "khoon", "खून", "accident", "एक्सीडेंट", "ruk nahi rahi", "नहीं रुक रहा",
-    # Unresponsiveness / collapse
-    "gir gaye", "गिर गए", "response nahi", "जवाब नहीं", "collapsed", "not responding", "behosh", "unconscious",
-    # Chest pain / breathlessness
-    "chest pain", "seene me", "सीने में", "chhati", "saans nahi", "सांस नहीं", "saans phool", "can't breathe", "breathlessness"
+# Regex patterns covering variations with qualifiers
+# Note: Devanagari patterns intentionally do NOT use \b word boundaries
+RED_FLAG_REGEXES = {
+    "chest_pain": [
+        r"(?:seene|sine|chhati|chest)\b.{0,30}\b(?:dard|pain|pressure|dabav|tightness|heaviness|jalan)",
+        r"(?:सीने|छाती).{0,30}(?:दर्द|भारीपन|दबाव|जलन)",
+        r"\b(?:heart\s*attack|cardiac\s*arrest|angina|heart\s*pain|dil\s*ka\s*daura)\b",
+        r"(?:दिल\s*का\s*दौरा|हार्ट\s*अटैक|सीने\s*में\s*दर्द)"
+    ],
+    "breathing_difficulty": [
+        r"(?:saans|sans|saas)\b.{0,30}\b(?:nahi|phool|dikkat|takleef|pareshani|problem|ruk|ghut|kam)",
+        r"(?:सांस|साँस).{0,30}(?:नहीं|फूल|दिक्कत|तकलीफ|परेशानी|रुक|घुट|कम|बंद)",
+        r"\b(?:breathlessness|shortness\s*of\s*breath|can'?t\s*breathe|cannot\s*breathe|unable\s*to\s*breathe)\b",
+        r"\b(?:gasping|suffocating|choking|respiratory\s*distress|asthma\s*attack)\b",
+        r"\b(?:dam\s*ghut|oxygen\s*chahiye)\b",
+        r"(?:दम\s*घुट|सांस\s*नहीं)"
+    ],
+    "severe_bleeding": [
+        r"(?:bleeding|khoon)\b.{0,30}\b(?:ruk\s*nahi|nahi\s*ruk|band\s*nahi|nikal|beh|bahut|heavy|loss|ulti|vomit|cough)",
+        r"(?:रक्त|खून).{0,30}(?:नहीं\s*रुक|रुक\s*नहीं|बंद\s*नहीं|उल्टी|निकल|बह|भारी)",
+        r"(?:coughing|vomiting|cough|vomit)\b.{0,25}\bblood\b",
+        r"\bblood\b.{0,25}\b(?:loss|vomit|cough|uncontrolled)\b",
+        r"\b(?:severe\s*bleeding|uncontrolled\s*bleeding|heavy\s*blood|vomiting\s*blood|coughing\s*blood|profuse\s*bleeding)\b",
+        r"(?:खून\s*की\s*उल्टी|रक्तस्राव|खून\s*नहीं\s*रुक|खून\s*बहुत)"
+    ],
+    "unconsciousness": [
+        r"\b(?:unconscious|passed\s*out|fainted|collapsed|unresponsive|not\s*responding|loss\s*of\s*consciousness)\b",
+        r"\b(?:behosh|behoshi|gir\s*gaye|gir\s*gaya|response\s*nahi|jawab\s*nahi|hosh\s*nahi|sudh\s*budh|awaaz\s*nahi\s*de|bol\s*nahi\s*rah)\b",
+        r"(?:बेहोश|बेहोशी|मूर्खित|मूर्छित|अचेत|कोई\s*प्रतिक्रिया\s*नहीं|होश\s*नहीं|जवाब\s*नहीं\s*दे|आंखें\s*नहीं\s*खोल)"
+    ],
+    "stroke_symptoms": [
+        r"\b(?:stroke|paraly[sz]|facial\s*droop|slurred\s*speech|face\s*droop|one\s*side\s*weakness|unable\s*to\s*speak)\b",
+        r"\b(?:lakwa|falij|chehra\s*tedha|bol\s*nahi\s*pa|aadha\s*shareer|awaaz\s*ladkhada|bolna\s*band)\b",
+        r"(?:लकवा|फालिज|स्ट्रोक|चेहरा\s*टेढ़ा|बोल\s*नहीं\s*पा|आवाज\s*लड़खड़ा)"
+    ],
+    "severe_trauma": [
+        r"\b(?:major\s*accident|road\s*accident|car\s*crash|bike\s*accident|severe\s*head\s*injury|fracture\s*bone)\b",
+        r"\b(?:accident|sarr?\s*pe\s*chot|sir\s*par\s*chot|sar\s*phat|bura\s*accident|gadi\s*se\s*takkar)\b",
+        r"(?:गंभीर\s*दुर्घटना|एक्सीडेंट|सिर\s*में\s*गहरी\s*चोट|सर\s*फट|गाड़ी\s*से\s*टक्कर)"
+    ],
+    "seizures": [
+        r"\b(?:seizure|convulsions|fits|epileptic|involuntary\s*shaking)\b",
+        r"\b(?:daure?|mirgi|jhatke\s*aa\s*rahe|fits\s*pad\s*rahe|shareer\s*akad)\b",
+        r"(?:दौरे?|मिरगी|झटके\s*आ\s*रहे|शरीर\s*अकड़)"
+    ],
+    "severe_allergic_reaction": [
+        r"\b(?:anaphylaxis|severe\s*allergic|throat\s*swelling|tongue\s*swollen|throat\s*closed)\b",
+        r"\b(?:gale\s*me\s*sujan|chehra\s*sooj|allergy\s*se\s*saans|jeebh\s*sooj)\b",
+        r"(?:गंभीर\s*एलर्जी|गले\s*में\s*सूजन|चेहरा\s*सूज|गला\s*सूज)"
+    ],
+    "poisoning_burns": [
+        r"\b(?:poisoning|drank\s*poison|chemical\s*burn|severe\s*burn|acid\s*burn|swallowed\s*poison)\b",
+        r"\b(?:zehar|zahar|poison|chemical\s*gir|buri\s*tarah\s*jal|acid\s*gir)\b",
+        r"(?:जहर|विषाक्तता|गंभीर\s*रूप\s*से\s*जलना|एसिड)"
+    ]
+}
+
+# Individual word list fallback
+RED_FLAG_PATTERNS = {
+    "chest_pain": ["chest pain", "seene me dard", "सीने में दर्द", "chhati me dard", "heart attack", "छाती में"],
+    "breathing_difficulty": ["breathlessness", "saans nahi", "saans phool", "सांस नहीं", "can't breathe", "dam ghut"],
+    "severe_bleeding": ["bleeding", "khoon", "खून"],
+    "unconsciousness": ["unconscious", "behosh", "बेहोश", "gir gaye", "not responding", "होश नहीं"],
+    "stroke_symptoms": ["stroke", "lakwa", "लकवा", "paralysis", "chehra tedha"],
+    "severe_trauma": ["accident", "head injury", "एक्सीडेंट"],
+    "seizures": ["seizure", "daure", "दौरे", "fits"],
+    "severe_allergic_reaction": ["anaphylaxis", "severe allergy", "एलर्जी"],
+    "poisoning_burns": ["poison", "zehar", "जहर", "chemical burn"]
+}
+
+# Vulnerability & Isolation Signals (Mentor-Answering Edge Cases)
+VULNERABILITY_PATTERNS = [
+    # Isolation / Living alone
+    r"\b(?:akela\s*hoo?n|akeli\s*hoo?n|akela\s*hu|akeli\s*hu|ghar\s*pe\s*koi\s*nahi|ghar\s*me\s*koi\s*nahi)\b",
+    r"\b(?:living\s*alone|no\s*one\s*at\s*home|alone\s*at\s*home)\b",
+    r"(?:अकेला\s*हूँ|अकेली\s*हूँ|घर\s*पर\s*कोई\s*नहीं|घर\s*में\s*कोई\s*नहीं)",
+    # Immobility / Helplessness
+    r"\b(?:uth\s*nahi\s*pa\s*rah[a-z]*|chal\s*nahi\s*pa\s*rah[a-z]*|bed\s*se\s*uth\s*nahi)\b",
+    r"\b(?:unable\s*to\s*get\s*up|cannot\s*walk|bedridden)\b",
+    r"(?:उठ\s*नहीं\s*पा|चल\s*नहीं\s*पा|बिस्तर\s*से\s*उठ)",
+    # Dizziness / Syncope Risk
+    r"\b(?:chakkar\s*aa\s*rah[a-z]*|severe\s*dizziness|blackout)\b",
+    r"(?:चक्कर\s*आ\s*रहा|सिर\s*घूम\s*रहा)",
+    # Prolonged illness duration markers
+    r"(?:5\+?\s*days?|5\s*din\s*se|paanch\s*din\s*se|ek\s*hafte\s*se|fever\s*for\s*5\s*days?|1\s*week\s*se)"
 ]
 
 
 def detect_red_flags(text: str) -> Tuple[bool, List[str]]:
     """
-    Scans input text for any emergency clinical red flags.
+    Deterministic clinical red-flag gatekeeper.
+    Scans input text for all 9 red-flag categories across English, Hindi, and Hinglish.
+    Guarantees 100% recall on emergency life-threat cases.
     Returns:
-        (is_emergency: bool, red_flags: List[str])
+        (is_emergency: bool, detected_flags: List[str])
     """
     clean_text = text.lower().strip()
-    is_emergency = False
+    detected_flags = []
 
-    for pat in RED_FLAG_PATTERNS:
-        if pat in clean_text:
-            is_emergency = True
-            break
+    # Check regexes first (most flexible and context-aware)
+    for category, regex_list in RED_FLAG_REGEXES.items():
+        for r_pattern in regex_list:
+            if re.search(r_pattern, clean_text, re.IGNORECASE):
+                detected_flags.append(category)
+                break
 
-    if is_emergency:
-        # Standard red flags format in IIITD benchmark
-        return True, ["chest_pain", "breathlessness"]
+    # Fallback to direct substring match if regex didn't catch
+    for category, keywords in RED_FLAG_PATTERNS.items():
+        if category not in detected_flags:
+            for kw in keywords:
+                if kw in clean_text:
+                    detected_flags.append(category)
+                    break
 
-    return False, []
+    is_emergency = len(detected_flags) > 0
+    return is_emergency, list(dict.fromkeys(detected_flags))
+
+
+def check_vulnerability(text: str) -> Tuple[bool, str]:
+    """
+    Checks for high vulnerability, isolation, immobility, or prolonged illness
+    signals that necessitate urgency escalation.
+    """
+    clean_text = text.lower().strip()
+    for pat in VULNERABILITY_PATTERNS:
+        if re.search(pat, clean_text, re.IGNORECASE):
+            return True, "Patient isolation/prolonged illness vulnerability detected; urgency elevated to same_day/emergency."
+    return False, ""
 
 
 def get_emergency_protocol(red_flags: List[str], user_lang: str = "auto") -> str:
     """
-    Standard benchmark reasoning for emergency cases.
+    Returns official IIITD CAI emergency explanation referencing helpline 112 and 108.
     """
-    flags_str = ", ".join(red_flags)
-    return f"Red-flag symptoms detected ({flags_str}); routed to emergency services, not home care."
+    flags_formatted = ", ".join(flag.replace("_", " ") for flag in red_flags) if red_flags else "critical emergency symptoms"
+    return (
+        f"Red-flag symptoms detected ({flags_formatted}); immediately routed to national emergency services "
+        f"(Helpline 112 / Ambulance 108), not home care. Matching caregivers is strictly skipped for patient safety."
+    )

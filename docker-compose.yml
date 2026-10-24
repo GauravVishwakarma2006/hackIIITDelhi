@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  carecompass-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: carecompass-hackiiitd
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - TINYFISH_API_KEY=${TINYFISH_API_KEY:-}
+    restart: unless-stopped

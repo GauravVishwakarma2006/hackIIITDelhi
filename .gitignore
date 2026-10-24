@@ -17,6 +17,7 @@ ENV/
 
 # Output data
 internships.json
+test_predictions.csv
 output/
 *.log
 
