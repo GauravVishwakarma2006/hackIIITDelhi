@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CareCompass — Intelligent Care Navigation & Caregiver Matching</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
@@ -17,20 +17,20 @@
         <div class="brand-icon">🧭</div>
         <div class="brand-info">
           <h1>CareCompass <span class="hack-badge">CAI · IIIT-Delhi</span></h1>
-          <p>AI-Powered Multilingual Care Navigation & Safety-First Caregiver Matching</p>
+          <p id="brand-subtitle">एआई-संचालित बहुभाषी स्वास्थ्य मार्गदर्शन एवं सुरक्षा-प्रथम देखभालकर्ता मिलान</p>
         </div>
       </div>
       <div class="nav-actions">
-        <div class="proxy-mode-box observer" title="Padosi ya Guard reporting for isolated elderly">
+        <div class="proxy-mode-box observer" id="observer-mode-box" title="अकेले रहने वाले बुजुर्गों के लिए पड़ोसी या गार्ड द्वारा रिपोर्टिंग">
           <input type="checkbox" id="observer-mode-toggle" onchange="toggleObserverMode()">
-          <label for="observer-mode-toggle" class="observer-label">👮‍♂️ Observer Mode</label>
+          <label for="observer-mode-toggle" class="observer-label" id="observer-label">👮‍♂️ ऑब्जर्वर मोड</label>
         </div>
-        <div class="proxy-mode-box">
+        <div class="proxy-mode-box" id="proxy-mode-box">
           <input type="checkbox" id="proxy-mode-toggle" onchange="toggleProxyMode()">
-          <label for="proxy-mode-toggle" class="proxy-label">👨‍👩‍👧 Family Proxy</label>
+          <label for="proxy-mode-toggle" class="proxy-label" id="proxy-label">👨‍👩‍👧 फैमिली प्रॉक्सी</label>
         </div>
         <div id="proxy-location-container" class="proxy-location-drawer hidden">
-          <label style="font-size: 11.5px; font-weight: 700; color: var(--primary);">Patient Location:</label>
+          <label id="proxy-location-label" style="font-size: 11.5px; font-weight: 700; color: var(--primary);">मरीज़ का स्थान:</label>
           <select id="proxy-location-select" onchange="changePatientLocation()">
             <option value="28.5445,77.2725">📍 IIIT-Delhi / Okhla (South-East)</option>
             <option value="28.5324,77.1930">📍 Saket (South Delhi)</option>
@@ -40,74 +40,78 @@
             <option value="28.5870,77.3489">📍 Noida Sec 18 (NCR)</option>
           </select>
         </div>
-        <div class="location-pill clickable" id="location-pill" title="Click to refresh current GPS location" onclick="fetchCurrentLocation(true)">
+        <div class="location-pill clickable" id="location-pill" title="जीपीएस रिफ्रेश करें" onclick="fetchCurrentLocation(true)">
           <span class="live-beacon" id="live-beacon"></span>
-          <span id="location-text">📍 Detecting your location...</span>
-          <button type="button" class="pill-refresh-btn" aria-label="Refresh GPS">🔄</button>
+          <span id="location-text">📍 आपका स्थान खोजा जा रहा है...</span>
+          <button type="button" class="pill-refresh-btn" id="pill-refresh-btn" aria-label="Refresh GPS">🔄</button>
         </div>
-        <select id="lang-select" class="lang-selector">
-          <option value="auto">🌐 Language: Auto-Detect</option>
-          <option value="Hindi">हिंदी (Hindi / Hinglish)</option>
-          <option value="English">English</option>
+        <button type="button" id="grandparent-mode-btn" class="grandparent-toggle-btn" onclick="openGrandparentWizard()">
+          👵 1-Tap Voice Mode
+        </button>
+        <select id="lang-select" class="lang-selector" onchange="changeLanguage(this.value)">
+          <option value="Hindi" selected>🇮🇳 हिंदी (Hindi)</option>
+          <option value="Hinglish">🗣️ हिंग्लिश (Hinglish)</option>
+          <option value="English">🌐 English</option>
+          <option value="auto">⚡ Auto-Detect</option>
         </select>
       </div>
     </header>
 
     <!-- Bento Clinical Scenarios Grid -->
     <section class="bento-scenarios">
-      <div class="scenario-card" onclick="applyPrompt('Papa ko do din se bukhar hai aur khansi bhi')">
+      <div class="scenario-card" id="sc-card-1" onclick="applyScenario(1)">
         <div>
           <div class="sc-header">
             <span class="sc-icon">👴</span>
-            <span class="sc-title">Papa Fever & Cough</span>
+            <span class="sc-title" id="sc1-title">पापा को बुखार व खांसी</span>
           </div>
-          <p class="sc-sub">Hinglish dialogue intake with smart vitals check follow-up.</p>
+          <p class="sc-sub" id="sc1-sub">वाइटल्स जांच और लक्षण स्पष्टता के साथ गृह सहायता संवाद।</p>
         </div>
-        <span class="sc-tag">Paramedic Home Visit</span>
+        <span class="sc-tag" id="sc1-tag">पैरामेडिक होम विजिट</span>
       </div>
 
-      <div class="scenario-card danger" onclick="applyPrompt('पापा को तेज सीने में दर्द है और सांस नहीं आ रही')">
+      <div class="scenario-card danger" id="sc-card-2" onclick="applyScenario(2)">
         <div>
           <div class="sc-header">
             <span class="sc-icon">🚨</span>
-            <span class="sc-title">Chest Pain & Distress</span>
+            <span class="sc-title" id="sc2-title">सीने में दर्द व सांस फूलना</span>
           </div>
-          <p class="sc-sub">Zero-tolerance red-flag trigger with 112 emergency routing.</p>
+          <p class="sc-sub" id="sc2-sub">112 आपातकालीन सेवा के साथ त्वरित जीवन-रक्षा प्रोटोकॉल।</p>
         </div>
-        <span class="sc-tag">Emergency 112</span>
+        <span class="sc-tag" id="sc2-tag">आपातकालीन 112</span>
       </div>
 
-      <div class="scenario-card observer-card" onclick="applyPrompt('Dadi darwaza nahi khol rahi hain aur phone nahi utha rahi, padosi reporting')">
+      <div class="scenario-card observer-card" id="sc-card-3" onclick="applyScenario(3)">
         <div>
           <div class="sc-header">
             <span class="sc-icon">👮‍♂️</span>
-            <span class="sc-title">Guard / Observer Alert</span>
+            <span class="sc-title" id="sc3-title">गार्ड / पड़ोसी अलर्ट</span>
           </div>
-          <p class="sc-sub">Unresponsive elder, door locked. Immediate welfare paramedic dispatch.</p>
+          <p class="sc-sub" id="sc3-sub">बुजुर्ग दरवाजा नहीं खोल रहे। तत्काल वेलफेयर पैरामेडिक सहायता।</p>
         </div>
-        <span class="sc-tag tag-observer">Welfare Dispatch</span>
+        <span class="sc-tag tag-observer" id="sc3-tag">कल्याण सहायता</span>
       </div>
 
-      <div class="scenario-card" onclick="applyPrompt('Doctor prescribed an injection, can someone come home')">
+      <div class="scenario-card" id="sc-card-4" onclick="applyScenario(4)">
         <div>
           <div class="sc-header">
             <span class="sc-icon">🩹</span>
-            <span class="sc-title">Injections & Dressing</span>
+            <span class="sc-title" id="sc4-title">इंजेक्शन व ड्रेसिंग</span>
           </div>
-          <p class="sc-sub">Procedural wound dressing and catheter care at home.</p>
+          <p class="sc-sub" id="sc4-sub">घर पर घाव की ड्रेसिंग, कैथेटर व इंजेक्शन सहायता।</p>
         </div>
-        <span class="sc-tag">Home Nursing</span>
+        <span class="sc-tag" id="sc4-tag">होम नर्सिंग</span>
       </div>
 
-      <div class="scenario-card" onclick="applyPrompt('Book a full body checkup, home collection')">
+      <div class="scenario-card" id="sc-card-5" onclick="applyScenario(5)">
         <div>
           <div class="sc-header">
             <span class="sc-icon">🧪</span>
-            <span class="sc-title">Home Lab Sample</span>
+            <span class="sc-title" id="sc5-title">घर से लैब टेस्ट</span>
           </div>
-          <p class="sc-sub">Scheduled diagnostic phlebotomy with doorstep collection.</p>
+          <p class="sc-sub" id="sc5-sub">घर से रक्त जांच एवं स्वास्थ्य चेकअप सैंपल कलेक्शन।</p>
         </div>
-        <span class="sc-tag">Lab Test Home</span>
+        <span class="sc-tag" id="sc5-tag">लैब टेस्ट होम</span>
       </div>
     </section>
 
@@ -117,20 +121,20 @@
       <section class="panel">
         <div class="panel-header">
           <div>
-            <h2>Describe What You Need</h2>
-            <p class="panel-sub">Speak or type in Hindi, Hinglish, or English</p>
+            <h2 id="intake-title">अपनी समस्या या जरूरत बताएं</h2>
+            <p class="panel-sub" id="intake-sub">हिंदी, हिंग्लिश या अंग्रेजी में बोलें अथवा लिखें</p>
           </div>
-          <span style="font-size: 12px; font-weight: 700; color: var(--primary);">🎙️ Voice-Ready</span>
+          <span id="voice-ready-badge" style="font-size: 12px; font-weight: 700; color: var(--primary);">🎙️ वॉइस-सक्षम</span>
         </div>
 
         <!-- Chat Stream -->
         <div class="chat-stream" id="chat-messages">
-          <div class="bubble-row assistant">
+          <div class="bubble-row assistant" id="initial-welcome-row">
             <div class="avatar bot">🤖</div>
             <div class="bubble">
-              <strong>Namaste! Main CareCompass hoon.</strong><br>
-              Aap ya aapke parivar me kisko kya takleef hai? Aap bol kar ya likh kar bata sakte hain.
-              <div class="bubble-note">(Hello! I am CareCompass. Please describe what care or symptoms you need help with.)</div>
+              <strong id="welcome-title">नमस्ते! मैं CareCompass हूँ।</strong><br>
+              <span id="welcome-body">आपको या आपके परिवार में किसको क्या तकलीफ है? आप बोलकर या लिखकर आसानी से बता सकते हैं।</span>
+              <div class="bubble-note" id="welcome-note">(सुरक्षा-प्रथम ट्राइएज एवं प्रमाणित देखभालकर्ता मिलान)</div>
             </div>
           </div>
         </div>
@@ -139,23 +143,23 @@
         <div class="sender-location-strip" id="sender-location-strip">
           <div class="sender-loc-main">
             <span class="sender-loc-icon">📍</span>
-            <span class="sender-loc-label">Sending message from:</span>
-            <span class="sender-loc-value" id="sender-coords-text">Detecting current GPS...</span>
+            <span class="sender-loc-label" id="sender-loc-label">मैसेज भेजने का स्थान:</span>
+            <span class="sender-loc-value" id="sender-coords-text">स्थान खोजा जा रहा है...</span>
           </div>
-          <button type="button" class="loc-detect-btn" id="loc-detect-btn" onclick="fetchCurrentLocation(true)" title="Take current GPS location">
+          <button type="button" class="loc-detect-btn" id="loc-detect-btn" onclick="fetchCurrentLocation(true)" title="जीपीएस पहचानें">
             <span class="btn-icon">🎯</span>
-            <span class="btn-text">Detect GPS</span>
+            <span class="btn-text" id="loc-detect-btn-text">जीपीएस पहचानें</span>
           </button>
         </div>
 
         <!-- Voice & Input Deck -->
         <div class="input-deck">
-          <button id="mic-btn" class="voice-orb" title="Click to speak (Hindi or English)">
+          <button id="mic-btn" class="voice-orb" title="बोलने के लिए क्लिक करें">
             <span id="mic-icon">🎤</span>
           </button>
-          <textarea id="user-input" rows="1" class="text-entry" placeholder="Bol kar ya likh kar batayein... (e.g. Papa ko bukhar hai)"></textarea>
+          <textarea id="user-input" rows="1" class="text-entry" placeholder="बोलकर या लिखकर बताएं... (जैसे: पापा को बुखार और खांसी है)"></textarea>
           <button id="send-btn" class="send-trigger">
-            <span>Send</span>
+            <span id="send-btn-text">भेजें</span>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           </button>
         </div>
@@ -166,30 +170,34 @@
       <section class="panel" id="results-panel">
         <div class="panel-header">
           <div>
-            <h2>Clinical Triage & Provider Match</h2>
-            <p class="panel-sub">Safety-validated routing and ranked local providers</p>
+            <h2 id="results-title">क्लिनिकल ट्राइएज एवं सहायक मिलान</h2>
+            <p class="panel-sub" id="results-sub">सुरक्षा-सत्यापित वर्गीकरण एवं प्रमाणित स्थानीय स्वास्थ्यकर्मी</p>
           </div>
         </div>
 
         <!-- Empty State -->
         <div id="empty-state" class="empty-view">
           <div class="empty-graphic">🩺</div>
-          <h3>Awaiting Clinical Inquiry</h3>
-          <p>Describe symptoms on the left. CareCompass will analyze severity, enforce red-flag safety, and match nearby certified caregivers.</p>
+          <h3 id="empty-title">स्वास्थ्य समस्या का विवरण प्रतीक्षित</h3>
+          <p id="empty-sub">बाईं ओर अपनी समस्या बताएं। CareCompass गंभीरता की जांच करेगा, आपातकालीन सुरक्षा सुनिश्चित करेगा और नजदीकी प्रमाणित देखभालकर्ताओं से जोड़ेगा।</p>
         </div>
 
         <!-- Dynamic Triage Summary Card -->
         <div id="triage-card" class="assessment-card hidden">
           <div class="pill-row">
-            <span id="care-type-badge" class="badge-pill badge-care">CARE TYPE</span>
-            <span id="urgency-badge" class="badge-pill">URGENCY</span>
+            <span id="care-type-badge" class="badge-pill badge-care">सेवा प्रकार</span>
+            <span id="urgency-badge" class="badge-pill">गंभीरता</span>
           </div>
           <div class="assessment-content">
-            <h4>Clinical Assessment & Reasoning</h4>
+            <h4 id="assessment-title">क्लिनिकल मूल्यांकन एवं कारण</h4>
             <p id="triage-reasoning"></p>
             <div style="display: flex; gap: 8px; align-items: center; margin-top: 10px; flex-wrap: wrap;">
-              <button id="tts-btn" class="tts-trigger" onclick="speakAssessment()">🔊 Read Aloud (आवाज में सुनें)</button>
-              <a id="whatsapp-share-btn" class="whatsapp-btn hidden" target="_blank" href="#">💬 Share with Family on WhatsApp</a>
+              <button id="tts-btn" class="tts-trigger" onclick="speakAssessment()">
+                <span id="tts-btn-text">🔊 बोलकर सुनें</span>
+              </button>
+              <a id="whatsapp-share-btn" class="whatsapp-btn hidden" target="_blank" href="#">
+                <span id="whatsapp-share-text">💬 व्हाट्सएप पर परिवार से साझा करें</span>
+              </a>
             </div>
           </div>
         </div>
@@ -198,24 +206,26 @@
         <div id="emergency-banner" class="emergency-drawer hidden">
           <div class="drawer-header">
             <span>🚨</span>
-            <h3>EMERGENCY 112 PROTOCOL ACTIVATED</h3>
+            <h3 id="emergency-title">आपातकालीन 112 प्रोटोकॉल सक्रिय</h3>
           </div>
           <p id="emergency-text"></p>
           <div class="emergency-btn-row">
-            <a href="tel:112" class="call-btn">📞 Dispatch 112 Helpline</a>
-            <a href="tel:108" class="call-btn alt">🚑 Call 108 Ambulance</a>
+            <a href="tel:112" class="call-btn" id="dispatch-112-btn">📞 112 राष्ट्रीय हेल्पलाइन</a>
+            <a href="tel:108" class="call-btn alt" id="call-108-btn">🚑 108 एम्बुलेंस बुलाएं</a>
           </div>
-          <a id="emergency-whatsapp-share-btn" class="whatsapp-btn" style="background:#B91C1C; margin-top: 12px; width: 100%;" target="_blank" href="#">🚨 Alert Family via WhatsApp</a>
+          <a id="emergency-whatsapp-share-btn" class="whatsapp-btn" style="background:#B91C1C; margin-top: 12px; width: 100%;" target="_blank" href="#">
+            <span id="emergency-whatsapp-text">🚨 परिवार को व्हाट्सएप पर आपातकालीन अलर्ट भेजें</span>
+          </a>
           <!-- Async Loaded Trauma Centers -->
           <div id="live-trauma-container" class="live-trauma-container hidden">
-            <div class="live-trauma-header">🏥 Verified 24x7 Emergency Trauma Centers Nearby (AIIMS & NCR Network)</div>
+            <div class="live-trauma-header" id="live-trauma-header">🏥 नजदीकी प्रमाणित 24x7 इमरजेंसी ट्रॉमा केंद्र (AIIMS व NCR नेटवर्क)</div>
             <div id="live-trauma-list"></div>
           </div>
         </div>
 
         <!-- Recommended Caregivers Deck -->
         <div id="caregivers-container" class="caregiver-deck hidden">
-          <div class="deck-label">Recommended Providers Nearby (Ranked by Multi-Criteria Formula)</div>
+          <div class="deck-label" id="caregivers-deck-label">नजदीकी अनुशंसित स्वास्थ्यकर्मी (बहु-मानदंड स्कोर अनुसार)</div>
           <div id="caregiver-list"></div>
         </div>
       </section>
@@ -226,14 +236,197 @@
   <div id="booking-modal" class="modal-backdrop hidden">
     <div class="modal-sheet">
       <div class="modal-head">
-        <h3>✅ Provider Dispatched</h3>
+        <h3 id="modal-title">✅ स्वास्थ्यकर्मी भेज दिया गया है</h3>
         <button class="dismiss-modal" onclick="closeModal()">✕</button>
       </div>
       <div class="modal-details" id="modal-content">
         <!-- Injected via JS -->
       </div>
       <div class="modal-foot">
-        <button class="confirm-btn" onclick="closeModal()">Done</button>
+        <button class="confirm-btn" id="modal-done-btn" onclick="closeModal()">पूर्ण</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 1-Tap Grandparent Voice & Touch Accessible Wizard -->
+  <div id="grandparent-wizard-modal" class="gp-wizard-overlay hidden">
+    <div class="gp-wizard-dialog">
+      <div class="gp-wizard-header">
+        <div class="gp-wizard-brand">
+          <span class="icon">🧭</span>
+          <h3 id="gp-modal-brand-title">CareCompass · 1-Tap Voice Mode</h3>
+        </div>
+        <button class="gp-close-btn" onclick="closeGrandparentWizard()" title="Close">✕</button>
+      </div>
+
+      <div class="gp-wizard-body">
+        <!-- Voice Spoken Strip -->
+        <div class="gp-voice-bar">
+          <div class="gp-voice-text">
+            <span class="gp-voice-icon-pulse">🔊</span>
+            <span id="gp-voice-caption">Namaste! CareCompass mein aapka swagat hai...</span>
+          </div>
+          <button type="button" class="gp-replay-btn" id="gp-replay-btn" onclick="replayGrandparentVoice()">🔊 Replay Voice</button>
+        </div>
+
+        <!-- Step 0: Welcome / Opening Screen -->
+        <div id="gp-screen-0" class="gp-screen">
+          <h2 class="gp-screen-title" id="gp-screen-0-title">Namaste! CareCompass Mein Swagat Hai</h2>
+          <div class="gp-btn-grid">
+            <div class="gp-action-card safe" onclick="gpGoToScreen(1)">
+              <span class="card-icon">👉</span>
+              <div>
+                <div class="card-title" id="gp-s0-btn-title">Screen Par Tap Karein (Start) ➔</div>
+                <div class="card-sub" id="gp-s0-btn-sub">Hum aapke liye turant doctor ya nurse bulayenge</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 1: Emergency & Safety Gatekeeper (Immediate Check) -->
+        <div id="gp-screen-1" class="gp-screen hidden">
+          <h2 class="gp-screen-title" id="gp-screen-1-title">🚨 Kya Aisi Koi Emergency Hai?</h2>
+          <div class="gp-btn-grid">
+            <div class="gp-action-card danger" onclick="gpTriggerEmergency('seene me tez dard')">
+              <span class="card-icon">🫀</span>
+              <div>
+                <div class="card-title" id="gp-em-card-1-title">Seene Me Tez Dard</div>
+                <div class="card-sub" id="gp-em-card-1-sub">Chest Pain / Heart Emergency</div>
+              </div>
+            </div>
+
+            <div class="gp-action-card danger" onclick="gpTriggerEmergency('saans phool rahi hai')">
+              <span class="card-icon">🫁</span>
+              <div>
+                <div class="card-title" id="gp-em-card-2-title">Saans Phoolna</div>
+                <div class="card-sub" id="gp-em-card-2-sub">Severe Breathlessness / Choking</div>
+              </div>
+            </div>
+
+            <div class="gp-action-card danger" onclick="gpTriggerEmergency('behoshi ya bleeding ruk nahi rahi')">
+              <span class="card-icon">💫</span>
+              <div>
+                <div class="card-title" id="gp-em-card-3-title">Behoshi / Jyada Khoon</div>
+                <div class="card-sub" id="gp-em-card-3-sub">Fainting or Heavy Bleeding</div>
+              </div>
+            </div>
+
+            <div class="gp-action-card safe" onclick="gpGoToScreen(2)">
+              <span class="card-icon">✅</span>
+              <div>
+                <div class="card-title" id="gp-em-safe-btn-title">Nahi, Aisi Koi Gambhir Baat Nahi ➔</div>
+                <div class="card-sub" id="gp-em-safe-btn-sub">Aage badhein (Proceed to Care Type)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 1 Emergency Escalation (If Red Flag Tapped) -->
+        <div id="gp-screen-emergency" class="gp-screen hidden">
+          <div class="gp-emergency-panel">
+            <span style="font-size: 44px;">🚨</span>
+            <h4 id="gp-em-escalate-title">EMERGENCY 112 PROTOCOL ACTIVATED</h4>
+            <p id="gp-emergency-desc">Yeh emergency pareshani lag rahi hai. Kripya ghabrayein nahi, neeche दिए gaye laal button par tap karke turant 112 ya 108 par call karein.</p>
+            <div class="gp-call-row">
+              <a href="tel:112" class="gp-call-btn" id="gp-call-112-btn">📞 Call 112 (National Emergency)</a>
+              <a href="tel:108" class="gp-call-btn alt" id="gp-call-108-btn">🚑 Call 108 (Ambulance)</a>
+            </div>
+            <a id="gp-em-whatsapp" target="_blank" href="#" class="whatsapp-btn" style="background:#B91C1C; width: 100%; justify-content:center;">🚨 Alert Family via WhatsApp</a>
+          </div>
+        </div>
+
+        <!-- Step 2: Symptom Selection (Care Type) -->
+        <div id="gp-screen-2" class="gp-screen hidden">
+          <h2 class="gp-screen-title" id="gp-screen-2-title">Aapko Kis Chiz Me Madad Chahiye?</h2>
+          <div class="gp-btn-grid cols-2">
+            <div class="gp-action-card" onclick="gpSelectSymptom('Tez bukhar aur khansi', 'paramedic_home_visit')">
+              <span class="card-icon">🌡️</span>
+              <div>
+                <div class="card-title" id="gp-sym-1-title">Tez Bukhar / Khansi</div>
+                <div class="card-sub" id="gp-sym-1-sub">Fever, Chills, Body Ache</div>
+              </div>
+            </div>
+
+            <div class="gp-action-card" onclick="gpSelectSymptom('Injection aur patti lagwani hai', 'home_nursing')">
+              <span class="card-icon">🩹</span>
+              <div>
+                <div class="card-title" id="gp-sym-2-title">Patti / Injection / Ghav</div>
+                <div class="card-sub" id="gp-sym-2-sub">Dressing, Catheter, Post-Surgery</div>
+              </div>
+            </div>
+
+            <div class="gp-action-card" onclick="gpSelectSymptom('Full body checkup blood test home collection', 'lab_test_home')">
+              <span class="card-icon">🩸</span>
+              <div>
+                <div class="card-title" id="gp-sym-3-title">Blood Test / Jaanch</div>
+                <div class="card-sub" id="gp-sym-3-sub">Lab Sample Collection at Home</div>
+              </div>
+            </div>
+
+            <div class="gp-action-card" onclick="gpSelectSymptom('Doctor se video call par salah chahiye', 'teleconsultation')">
+              <span class="card-icon">👨‍⚕️</span>
+              <div>
+                <div class="card-title" id="gp-sym-4-title">Doctor Se Salah</div>
+                <div class="card-sub" id="gp-sym-4-sub">General Teleconsultation</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3: Duration & Isolation (Vulnerability Detector) -->
+        <div id="gp-screen-3" class="gp-screen hidden">
+          <h2 class="gp-screen-title" id="gp-screen-3-title">Kitne Din Se Takleef Hai?</h2>
+          <div class="gp-btn-grid">
+            <div class="gp-action-card" onclick="gpSelectDuration('1 se 2 din se')">
+              <span class="card-icon">🟡</span>
+              <div>
+                <div class="card-title" id="gp-dur-1-title">1 se 2 Din Se</div>
+                <div class="card-sub" id="gp-dur-1-sub">Recent onset / Standard urgency</div>
+              </div>
+            </div>
+
+            <div class="gp-action-card" onclick="gpSelectDuration('3 se 4 din se')">
+              <span class="card-icon">🟠</span>
+              <div>
+                <div class="card-title" id="gp-dur-2-title">3 se 4 Din Se</div>
+                <div class="card-sub" id="gp-dur-2-sub">Moderate duration</div>
+              </div>
+            </div>
+
+            <div class="gp-action-card danger" onclick="gpSelectDuration('5+ din se hai, ghar par akele hain aur uth nahi pa rahe')">
+              <span class="card-icon">⚠️</span>
+              <div>
+                <div class="card-title" id="gp-dur-3-title">5+ Din Se (Ghar par akele hain / Uth nahi pa rahe)</div>
+                <div class="card-sub" id="gp-dur-3-sub">Elevates to Same-Day Urgent Nursing/Paramedic</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 4: Match Confirmation (Success) -->
+        <div id="gp-screen-4" class="gp-screen hidden">
+          <h2 class="gp-screen-title" id="gp-screen-4-title">✅ Aapke Paas Ke Sahayak Match Ho Gaye</h2>
+          <div class="gp-caregiver-summary" id="gp-matched-summary">
+            <!-- Injected via JS -->
+          </div>
+          <div class="gp-btn-grid">
+            <a id="gp-whatsapp-btn" target="_blank" href="#" class="gp-action-card safe" style="text-decoration:none;">
+              <span class="card-icon">💬</span>
+              <div>
+                <div class="card-title" id="gp-success-wa-title">Parivaar Ko WhatsApp Karein</div>
+                <div class="card-sub" id="gp-success-wa-sub">Opens WhatsApp with pre-filled status & live details</div>
+              </div>
+            </a>
+
+            <div class="gp-action-card" onclick="gpResetWizard()">
+              <span class="card-icon">🔄</span>
+              <div>
+                <div class="card-title" id="gp-success-new-title">Naya Patient Check Karein</div>
+                <div class="card-sub" id="gp-success-new-sub">Start another inquiry from beginning</div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>

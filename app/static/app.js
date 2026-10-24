@@ -1100,8 +1100,223 @@ function closeModal() {
   document.getElementById("booking-modal").classList.add("hidden");
 }
 
+// ==========================================================================
+// 1-Tap Grandparent Voice & Touch Accessible Wizard Engine
+// Native browser SpeechSynthesis calibrated for clear, slow Hinglish (~0.88x)
+// ==========================================================================
+
+const GP_VOICE_STRINGS = {
+  screen0: "Namaste! CareCompass mein aapka swagat hai. Kripya screen par tap karein, hum aapke liye turant doctor ya nurse bulayenge.",
+  screen1: "Sabse pehle batayein, kya mareez ko achanak koi aisi gambhir pareshani hai—jaise seene mein tez dard, saans phoolna, behoshi, ya khoon nikalna?",
+  screen1Emergency: "Yeh emergency pareshani lag rahi hai. Kripya ghabrayein nahi, neeche diye gaye laal button par tap karke turant 112 ya 108 par call karein.",
+  screen2: "Theek hai. Aapko kis cheez mein madad chahiye? Tez bukhar, ghav ki patti ya injection, khoon ki jaanch, ya doctor se video call par salah?",
+  screen3: "Yeh takleef kitne din se hai? Aur kya mareez ghar par akele hain ya uthne mein dikkat hai?",
+  screen4: "Aapke paas ke sahayak match ho gaye hain. Detail screen par dikh rahi hai. Aap ek tap karke parivaar ko WhatsApp par bhi bhej sakte hain."
+};
+
+let gpCurrentScreen = 0;
+let gpVoiceText = "";
+let gpSelectedSymptom = "";
+let gpSelectedCareType = "";
+
+function gpSpeak(text) {
+  gpVoiceText = text;
+  const captionEl = document.getElementById("gp-voice-caption");
+  if (captionEl) captionEl.textContent = text;
+
+  if (!('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = "hi-IN"; // Native Indian Hinglish / Hindi synthesis
+  utterance.rate = 0.88;    // Calibrated slow, clear pacing for elderly
+  utterance.pitch = 1.0;
+  window.speechSynthesis.speak(utterance);
+}
+
+function replayGrandparentVoice() {
+  if (gpVoiceText) {
+    gpSpeak(gpVoiceText);
+  }
+}
+
+function openGrandparentWizard() {
+  const modal = document.getElementById("grandparent-wizard-modal");
+  if (modal) modal.classList.remove("hidden");
+  gpGoToScreen(0);
+}
+
+function closeGrandparentWizard() {
+  const modal = document.getElementById("grandparent-wizard-modal");
+  if (modal) modal.classList.add("hidden");
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+  }
+}
+
+function gpGoToScreen(screenNum) {
+  gpCurrentScreen = screenNum;
+  const screens = [
+    "gp-screen-0",
+    "gp-screen-1",
+    "gp-screen-emergency",
+    "gp-screen-2",
+    "gp-screen-3",
+    "gp-screen-4"
+  ];
+
+  screens.forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.classList.add("hidden");
+  });
+
+  const targetId = `gp-screen-${screenNum}`;
+  const targetEl = document.getElementById(targetId);
+  if (targetEl) targetEl.classList.remove("hidden");
+
+  // Trigger Spoken Audio according to the active screen
+  if (screenNum === 0) {
+    gpSpeak(GP_VOICE_STRINGS.screen0);
+  } else if (screenNum === 1) {
+    gpSpeak(GP_VOICE_STRINGS.screen1);
+  } else if (screenNum === 2) {
+    gpSpeak(GP_VOICE_STRINGS.screen2);
+  } else if (screenNum === 3) {
+    gpSpeak(GP_VOICE_STRINGS.screen3);
+  }
+}
+
+function gpTriggerEmergency(emergencyDesc) {
+  const screens = ["gp-screen-0", "gp-screen-1", "gp-screen-2", "gp-screen-3", "gp-screen-4"];
+  screens.forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.classList.add("hidden");
+  });
+
+  const emEl = document.getElementById("gp-screen-emergency");
+  if (emEl) emEl.classList.remove("hidden");
+
+  gpSpeak(GP_VOICE_STRINGS.screen1Emergency);
+
+  // Configure WhatsApp alert
+  const emShareText = encodeURIComponent(
+    `🚨 *EMERGENCY 112 ALERT - CareCompass*\n` +
+    `Patient Location: (${patientLocation.lat.toFixed(4)}, ${patientLocation.lng.toFixed(4)})\n` +
+    `Symptoms: ${emergencyDesc}\n` +
+    `Dispatch: Helpline 112 / Ambulance 108 activated immediately!`
+  );
+  const waBtn = document.getElementById("gp-em-whatsapp");
+  if (waBtn) waBtn.href = `https://wa.me/?text=${emShareText}`;
+
+  // Also notify main workstation and background trauma desks
+  fetch("/triage", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      user_input: emergencyDesc,
+      language: currentLanguage,
+      location: patientLocation,
+      conversation_history: []
+    })
+  }).then(r => r.json()).then(renderResponse).catch(console.warn);
+
+  loadLiveTraumaCenters(patientLocation.lat, patientLocation.lng);
+}
+
+function gpSelectSymptom(symptomDesc, careType) {
+  gpSelectedSymptom = symptomDesc;
+  gpSelectedCareType = careType;
+  gpGoToScreen(3);
+}
+
+async function gpSelectDuration(durationDesc) {
+  const fullText = `${gpSelectedSymptom}, ${durationDesc}`;
+  
+  // Show brief loading state in voice
+  gpSpeak("Kripya ek pal intezaar karein, hum aapke paas ke certified sahayak dhoond rahe hain...");
+
+  try {
+    const payload = {
+      user_input: fullText,
+      language: currentLanguage,
+      location: patientLocation,
+      conversation_history: conversationHistory
+    };
+
+    conversationHistory.push({ role: "user", content: fullText });
+
+    const res = await fetch("/triage", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) throw new Error("Triage failed");
+    const data = await res.json();
+
+    // Render in main workstation as well
+    renderResponse(data);
+
+    if (data.care_type === "emergency_112" || data.care_type === "emergency") {
+      gpTriggerEmergency(fullText);
+      return;
+    }
+
+    // Advance to Screen 4 (Match Confirmation)
+    const screens = ["gp-screen-0", "gp-screen-1", "gp-screen-emergency", "gp-screen-2", "gp-screen-3"];
+    screens.forEach(id => document.getElementById(id)?.classList.add("hidden"));
+
+    const screen4 = document.getElementById("gp-screen-4");
+    if (screen4) screen4.classList.remove("hidden");
+
+    gpSpeak(GP_VOICE_STRINGS.screen4);
+
+    // Build Caregiver Summary
+    const summaryContainer = document.getElementById("gp-matched-summary");
+    if (summaryContainer) {
+      if (data.matched_caregivers && data.matched_caregivers.length > 0) {
+        const top = data.matched_caregivers[0];
+        const scorePct = Math.round(top.score * 100);
+        summaryContainer.innerHTML = `
+          <h4>🧑‍⚕️ ${top.name || top.caregiver_id} · <span style="color:#16A34A;">${scorePct}% Match</span></h4>
+          <p style="margin: 6px 0; font-weight: 700; color: #14532D;">🏥 ${data.care_type.replace(/_/g, " ").toUpperCase()} (${data.urgency.toUpperCase()})</p>
+          <p style="margin: 6px 0; font-size: 13.5px;">📍 ${top.distance_km} km door · ⏰ Slot: ${top.available_slot || "Today Available"}</p>
+          <p style="margin-top: 8px; font-size: 13px; color: #78716C;">${top.reason}</p>
+        `;
+
+        // Pre-fill WhatsApp link
+        const shareText = encodeURIComponent(
+          `🧭 *CareCompass Health Caregiver Matched*\n` +
+          `Patient: (${patientLocation.lat.toFixed(4)}, ${patientLocation.lng.toFixed(4)})\n` +
+          `Service: ${data.care_type.replace(/_/g, " ").toUpperCase()}\n` +
+          `Provider: ${top.name || top.caregiver_id} (${top.reason})\n` +
+          `Slot: ${top.available_slot || "Available Today"}\n` +
+          `Status: Provider Dispatched`
+        );
+        const waBtn = document.getElementById("gp-whatsapp-btn");
+        if (waBtn) waBtn.href = `https://wa.me/?text=${shareText}`;
+      } else {
+        summaryContainer.innerHTML = `
+          <h4>🏥 ${data.care_type.replace(/_/g, " ").toUpperCase()}</h4>
+          <p>${data.reasoning}</p>
+        `;
+      }
+    }
+  } catch (err) {
+    console.error(err);
+    gpSpeak("Kshama karein, network error aayi hai. Kripya punah prayas karein.");
+  }
+}
+
+function gpResetWizard() {
+  gpSelectedSymptom = "";
+  gpSelectedCareType = "";
+  gpGoToScreen(1);
+}
+
 // Initialization on load
 document.addEventListener("DOMContentLoaded", () => {
   changeLanguage(currentLanguage);
   fetchCurrentLocation(false);
 });
+

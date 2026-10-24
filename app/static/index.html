@@ -45,6 +45,9 @@
           <span id="location-text">📍 आपका स्थान खोजा जा रहा है...</span>
           <button type="button" class="pill-refresh-btn" id="pill-refresh-btn" aria-label="Refresh GPS">🔄</button>
         </div>
+        <button type="button" id="grandparent-mode-btn" class="grandparent-toggle-btn" onclick="openGrandparentWizard()">
+          👵 1-Tap Voice Mode
+        </button>
         <select id="lang-select" class="lang-selector" onchange="changeLanguage(this.value)">
           <option value="Hindi" selected>🇮🇳 हिंदी (Hindi)</option>
           <option value="Hinglish">🗣️ हिंग्लिश (Hinglish)</option>
@@ -241,6 +244,189 @@
       </div>
       <div class="modal-foot">
         <button class="confirm-btn" id="modal-done-btn" onclick="closeModal()">पूर्ण</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 1-Tap Grandparent Voice & Touch Accessible Wizard -->
+  <div id="grandparent-wizard-modal" class="gp-wizard-overlay hidden">
+    <div class="gp-wizard-dialog">
+      <div class="gp-wizard-header">
+        <div class="gp-wizard-brand">
+          <span class="icon">🧭</span>
+          <h3 id="gp-modal-brand-title">CareCompass · 1-Tap Voice Mode</h3>
+        </div>
+        <button class="gp-close-btn" onclick="closeGrandparentWizard()" title="Close">✕</button>
+      </div>
+
+      <div class="gp-wizard-body">
+        <!-- Voice Spoken Strip -->
+        <div class="gp-voice-bar">
+          <div class="gp-voice-text">
+            <span class="gp-voice-icon-pulse">🔊</span>
+            <span id="gp-voice-caption">Namaste! CareCompass mein aapka swagat hai...</span>
+          </div>
+          <button type="button" class="gp-replay-btn" id="gp-replay-btn" onclick="replayGrandparentVoice()">🔊 Replay Voice</button>
+        </div>
+
+        <!-- Step 0: Welcome / Opening Screen -->
+        <div id="gp-screen-0" class="gp-screen">
+          <h2 class="gp-screen-title" id="gp-screen-0-title">Namaste! CareCompass Mein Swagat Hai</h2>
+          <div class="gp-btn-grid">
+            <div class="gp-action-card safe" onclick="gpGoToScreen(1)">
+              <span class="card-icon">👉</span>
+              <div>
+                <div class="card-title" id="gp-s0-btn-title">Screen Par Tap Karein (Start) ➔</div>
+                <div class="card-sub" id="gp-s0-btn-sub">Hum aapke liye turant doctor ya nurse bulayenge</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 1: Emergency & Safety Gatekeeper (Immediate Check) -->
+        <div id="gp-screen-1" class="gp-screen hidden">
+          <h2 class="gp-screen-title" id="gp-screen-1-title">🚨 Kya Aisi Koi Emergency Hai?</h2>
+          <div class="gp-btn-grid">
+            <div class="gp-action-card danger" onclick="gpTriggerEmergency('seene me tez dard')">
+              <span class="card-icon">🫀</span>
+              <div>
+                <div class="card-title" id="gp-em-card-1-title">Seene Me Tez Dard</div>
+                <div class="card-sub" id="gp-em-card-1-sub">Chest Pain / Heart Emergency</div>
+              </div>
+            </div>
+
+            <div class="gp-action-card danger" onclick="gpTriggerEmergency('saans phool rahi hai')">
+              <span class="card-icon">🫁</span>
+              <div>
+                <div class="card-title" id="gp-em-card-2-title">Saans Phoolna</div>
+                <div class="card-sub" id="gp-em-card-2-sub">Severe Breathlessness / Choking</div>
+              </div>
+            </div>
+
+            <div class="gp-action-card danger" onclick="gpTriggerEmergency('behoshi ya bleeding ruk nahi rahi')">
+              <span class="card-icon">💫</span>
+              <div>
+                <div class="card-title" id="gp-em-card-3-title">Behoshi / Jyada Khoon</div>
+                <div class="card-sub" id="gp-em-card-3-sub">Fainting or Heavy Bleeding</div>
+              </div>
+            </div>
+
+            <div class="gp-action-card safe" onclick="gpGoToScreen(2)">
+              <span class="card-icon">✅</span>
+              <div>
+                <div class="card-title" id="gp-em-safe-btn-title">Nahi, Aisi Koi Gambhir Baat Nahi ➔</div>
+                <div class="card-sub" id="gp-em-safe-btn-sub">Aage badhein (Proceed to Care Type)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 1 Emergency Escalation (If Red Flag Tapped) -->
+        <div id="gp-screen-emergency" class="gp-screen hidden">
+          <div class="gp-emergency-panel">
+            <span style="font-size: 44px;">🚨</span>
+            <h4 id="gp-em-escalate-title">EMERGENCY 112 PROTOCOL ACTIVATED</h4>
+            <p id="gp-emergency-desc">Yeh emergency pareshani lag rahi hai. Kripya ghabrayein nahi, neeche diye gaye laal button par tap karke turant 112 ya 108 par call karein.</p>
+            <div class="gp-call-row">
+              <a href="tel:112" class="gp-call-btn" id="gp-call-112-btn">📞 Call 112 (National Emergency)</a>
+              <a href="tel:108" class="gp-call-btn alt" id="gp-call-108-btn">🚑 Call 108 (Ambulance)</a>
+            </div>
+            <a id="gp-em-whatsapp" target="_blank" href="#" class="whatsapp-btn" style="background:#B91C1C; width: 100%; justify-content:center;">🚨 Alert Family via WhatsApp</a>
+          </div>
+        </div>
+
+        <!-- Step 2: Symptom Selection (Care Type) -->
+        <div id="gp-screen-2" class="gp-screen hidden">
+          <h2 class="gp-screen-title" id="gp-screen-2-title">Aapko Kis Chiz Me Madad Chahiye?</h2>
+          <div class="gp-btn-grid cols-2">
+            <div class="gp-action-card" onclick="gpSelectSymptom('Tez bukhar aur khansi', 'paramedic_home_visit')">
+              <span class="card-icon">🌡️</span>
+              <div>
+                <div class="card-title" id="gp-sym-1-title">Tez Bukhar / Khansi</div>
+                <div class="card-sub" id="gp-sym-1-sub">Fever, Chills, Body Ache</div>
+              </div>
+            </div>
+
+            <div class="gp-action-card" onclick="gpSelectSymptom('Injection aur patti lagwani hai', 'home_nursing')">
+              <span class="card-icon">🩹</span>
+              <div>
+                <div class="card-title" id="gp-sym-2-title">Patti / Injection / Ghav</div>
+                <div class="card-sub" id="gp-sym-2-sub">Dressing, Catheter, Post-Surgery</div>
+              </div>
+            </div>
+
+            <div class="gp-action-card" onclick="gpSelectSymptom('Full body checkup blood test home collection', 'lab_test_home')">
+              <span class="card-icon">🩸</span>
+              <div>
+                <div class="card-title" id="gp-sym-3-title">Blood Test / Jaanch</div>
+                <div class="card-sub" id="gp-sym-3-sub">Lab Sample Collection at Home</div>
+              </div>
+            </div>
+
+            <div class="gp-action-card" onclick="gpSelectSymptom('Doctor se video call par salah chahiye', 'teleconsultation')">
+              <span class="card-icon">👨‍⚕️</span>
+              <div>
+                <div class="card-title" id="gp-sym-4-title">Doctor Se Salah</div>
+                <div class="card-sub" id="gp-sym-4-sub">General Teleconsultation</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3: Duration & Isolation (Vulnerability Detector) -->
+        <div id="gp-screen-3" class="gp-screen hidden">
+          <h2 class="gp-screen-title" id="gp-screen-3-title">Kitne Din Se Takleef Hai?</h2>
+          <div class="gp-btn-grid">
+            <div class="gp-action-card" onclick="gpSelectDuration('1 se 2 din se')">
+              <span class="card-icon">🟡</span>
+              <div>
+                <div class="card-title" id="gp-dur-1-title">1 se 2 Din Se</div>
+                <div class="card-sub" id="gp-dur-1-sub">Recent onset / Standard urgency</div>
+              </div>
+            </div>
+
+            <div class="gp-action-card" onclick="gpSelectDuration('3 se 4 din se')">
+              <span class="card-icon">🟠</span>
+              <div>
+                <div class="card-title" id="gp-dur-2-title">3 se 4 Din Se</div>
+                <div class="card-sub" id="gp-dur-2-sub">Moderate duration</div>
+              </div>
+            </div>
+
+            <div class="gp-action-card danger" onclick="gpSelectDuration('5+ din se hai, ghar par akele hain aur uth nahi pa rahe')">
+              <span class="card-icon">⚠️</span>
+              <div>
+                <div class="card-title" id="gp-dur-3-title">5+ Din Se (Ghar par akele hain / Uth nahi pa rahe)</div>
+                <div class="card-sub" id="gp-dur-3-sub">Elevates to Same-Day Urgent Nursing/Paramedic</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 4: Match Confirmation (Success) -->
+        <div id="gp-screen-4" class="gp-screen hidden">
+          <h2 class="gp-screen-title" id="gp-screen-4-title">✅ Aapke Paas Ke Sahayak Match Ho Gaye</h2>
+          <div class="gp-caregiver-summary" id="gp-matched-summary">
+            <!-- Injected via JS -->
+          </div>
+          <div class="gp-btn-grid">
+            <a id="gp-whatsapp-btn" target="_blank" href="#" class="gp-action-card safe" style="text-decoration:none;">
+              <span class="card-icon">💬</span>
+              <div>
+                <div class="card-title" id="gp-success-wa-title">Parivaar Ko WhatsApp Karein</div>
+                <div class="card-sub" id="gp-success-wa-sub">Opens WhatsApp with pre-filled status & live details</div>
+              </div>
+            </a>
+
+            <div class="gp-action-card" onclick="gpResetWizard()">
+              <span class="card-icon">🔄</span>
+              <div>
+                <div class="card-title" id="gp-success-new-title">Naya Patient Check Karein</div>
+                <div class="card-sub" id="gp-success-new-sub">Start another inquiry from beginning</div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
