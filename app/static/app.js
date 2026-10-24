@@ -38,8 +38,8 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
 
   recognition.onstart = () => {
     isRecording = true;
-    micBtn.classList.add("recording");
-    micStatus.textContent = "Listening... Bolna shuru kijiye (listening in Hindi/English)";
+    micBtn.classList.add("listening");
+    micStatus.textContent = "🎙️ Listening... Bolna shuru kijiye (listening in Hindi/English)";
   };
 
   recognition.onresult = (event) => {
@@ -51,13 +51,13 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
   recognition.onerror = (event) => {
     console.error("Speech recognition error:", event.error);
     isRecording = false;
-    micBtn.classList.remove("recording");
+    micBtn.classList.remove("listening");
     micStatus.textContent = "Voice input error. Please type your message.";
   };
 
   recognition.onend = () => {
     isRecording = false;
-    micBtn.classList.remove("recording");
+    micBtn.classList.remove("listening");
   };
 } else {
   micBtn.style.display = "none";
@@ -68,7 +68,6 @@ micBtn.addEventListener("click", () => {
   if (isRecording) {
     recognition.stop();
   } else {
-    // Set language based on dropdown if English selected
     recognition.lang = langSelect.value === "English" ? "en-IN" : "hi-IN";
     recognition.start();
   }
@@ -129,25 +128,25 @@ function applyPrompt(text) {
 }
 
 function appendMessage(role, text) {
-  const msgDiv = document.createElement("div");
-  msgDiv.className = `message ${role}-msg`;
+  const row = document.createElement("div");
+  row.className = `bubble-row ${role}`;
 
   const avatar = document.createElement("div");
-  avatar.className = "msg-avatar";
+  avatar.className = `avatar ${role === "user" ? "patient" : "bot"}`;
   avatar.textContent = role === "user" ? "👤" : "🤖";
 
-  const content = document.createElement("div");
-  content.className = "msg-content";
-  content.innerHTML = text.replace(/\n/g, "<br>");
+  const bubble = document.createElement("div");
+  bubble.className = "bubble";
+  bubble.innerHTML = text.replace(/\n/g, "<br>");
 
-  msgDiv.appendChild(avatar);
-  msgDiv.appendChild(content);
-  chatMessages.appendChild(msgDiv);
+  row.appendChild(avatar);
+  row.appendChild(bubble);
+  chatMessages.appendChild(row);
   chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
 function renderResponse(data) {
-  // Case A: Follow-up question needed
+  // Case A: Follow-up question needed (Underspecified)
   if (data.follow_up_question) {
     appendMessage("assistant", data.follow_up_question);
     conversationHistory.push({ role: "assistant", content: data.follow_up_question });
@@ -158,7 +157,7 @@ function renderResponse(data) {
   emptyState.classList.add("hidden");
 
   // Emergency Case
-  if (data.care_type === "emergency") {
+  if (data.care_type === "emergency_112" || data.care_type === "emergency") {
     emergencyBanner.classList.remove("hidden");
     emergencyText.textContent = data.reasoning;
     triageCard.classList.add("hidden");
@@ -174,12 +173,12 @@ function renderResponse(data) {
   // Format Badges
   const careTypeFormatted = data.care_type.replace(/_/g, " ").toUpperCase();
   careTypeBadge.textContent = careTypeFormatted;
-  careTypeBadge.className = "badge badge-care";
+  careTypeBadge.className = "badge-pill badge-care";
 
   urgencyBadge.textContent = `Urgency: ${data.urgency.toUpperCase()}`;
-  urgencyBadge.className = `badge ${
-    data.urgency === "immediate" ? "badge-immediate" :
-    data.urgency === "same_day" ? "badge-sameday" : "badge-routine"
+  urgencyBadge.className = `badge-pill ${
+    data.urgency === "emergency" ? "badge-urgency-emergency" :
+    data.urgency === "same_day" ? "badge-urgency-sameday" : "badge-urgency-scheduled"
   }`;
 
   triageReasoning.textContent = data.reasoning;
@@ -192,15 +191,15 @@ function renderResponse(data) {
 
     data.matched_caregivers.forEach((cg) => {
       const card = document.createElement("div");
-      card.className = "caregiver-card";
+      card.className = "caregiver-item";
       const scorePct = Math.round(cg.score * 100);
 
       card.innerHTML = `
-        <div class="cg-meta">
-          <h4>${cg.name || cg.caregiver_id} <span class="cg-score">${scorePct}% Match</span></h4>
-          <p class="cg-reason">${cg.reason}</p>
+        <div class="cg-profile">
+          <h4>${cg.name || cg.caregiver_id} <span class="match-score">${scorePct}% Match</span></h4>
+          <p class="cg-justification">${cg.reason}</p>
         </div>
-        <button class="book-btn" onclick="openBookingModal('${cg.name || cg.caregiver_id}', '${cg.role}', '${cg.available_slot}')">
+        <button class="action-book" onclick="openBookingModal('${cg.name || cg.caregiver_id}', '${cg.role || data.care_type}', '${cg.available_slot}')">
           Book 1-Tap
         </button>
       `;
@@ -216,13 +215,13 @@ function openBookingModal(name, role, slot) {
   const modal = document.getElementById("booking-modal");
   const modalContent = document.getElementById("modal-content");
   modalContent.innerHTML = `
-    <p>Your request has been dispatched to <strong>${name}</strong>.</p>
-    <div style="margin: 12px 0; background: #0f172a; padding: 12px; border-radius: 8px;">
-      <p>🏥 <strong>Service:</strong> ${role.replace(/_/g, " ").toUpperCase()}</p>
-      <p>⏰ <strong>Scheduled Slot:</strong> Today at ${slot || "4:00 PM"}</p>
+    <p>Your care request has been routed to <strong>${name}</strong>.</p>
+    <div style="margin: 16px 0; background: #F4EFE6; padding: 14px 18px; border-radius: 12px; border: 1px solid #E8E0D2;">
+      <p style="margin-bottom: 6px;">🏥 <strong>Care Service:</strong> ${role.replace(/_/g, " ").toUpperCase()}</p>
+      <p style="margin-bottom: 6px;">⏰ <strong>Available Slot:</strong> Today at ${slot || "Immediate Available"}</p>
       <p>📍 <strong>Patient Location:</strong> Okhla Phase III, New Delhi</p>
     </div>
-    <p style="font-size: 12px; color: #94a3b8;">The caregiver will contact you shortly to confirm vitals and arrival.</p>
+    <p style="font-size: 12px; color: #78716C;">The certified provider has received your location and will contact you shortly to confirm arrival.</p>
   `;
   modal.classList.remove("hidden");
 }
