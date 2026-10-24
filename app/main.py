@@ -118,7 +118,14 @@ def triage_endpoint(request: TriageRequest) -> TriageResponse:
         )
 
     # Step 3: Final Clinical Triage Classification
-    care_type, urgency, reasoning = classify_triage(user_text, is_emergency=False, red_flags=[])
+    # Concatenate prior user turns with user_input so follow-up turns retain full clinical context
+    full_context = user_text
+    if request.conversation_history:
+        past_turns = " ".join([t.content for t in request.conversation_history if t.role == "user" and t.content.strip()])
+        if past_turns:
+            full_context = f"{past_turns} {user_text}"
+
+    care_type, urgency, reasoning = classify_triage(full_context, is_emergency=False, red_flags=[])
 
     # Step 4: Multi-Criteria Caregiver Matching
     loc = request.location
