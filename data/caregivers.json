@@ -1,149 +1,1830 @@
 [
   {
+    "caregiver_id": "CG_001",
     "id": "CG_001",
-    "name": "Dr. Rajesh Sharma",
-    "role": "gp_teleconsult",
-    "skills": ["general_medicine", "respiratory_infections", "pediatric_triage", "chronic_disease_review"],
-    "location": { "lat": 28.5445, "lng": 77.2725 },
-    "area": "Okhla Phase III, New Delhi",
-    "languages": ["Hindi", "English"],
-    "rating": 4.9,
-    "total_reviews": 184,
-    "availability_slots": ["today_13:00", "today_15:30", "today_17:00"]
+    "name": "Mohit Gupta",
+    "role": "doctor",
+    "qualification": "MBBS",
+    "gender": "M",
+    "languages": [
+      "Hindi",
+      "Haryanvi"
+    ],
+    "skills": [
+      "teleconsultation",
+      "prescription",
+      "report_review"
+    ],
+    "base_area": "Noida Sec 18",
+    "location": {
+      "lat": 28.5575,
+      "lng": 77.3381
+    },
+    "max_radius_km": 5.0,
+    "tier": "",
+    "rating": 3.9,
+    "experience_years": 8,
+    "free_from": "14:00",
+    "free_until": "17:00",
+    "active": true
   },
   {
+    "caregiver_id": "CG_002",
     "id": "CG_002",
-    "name": "Pooja Verma",
-    "role": "paramedic_home_visit",
-    "skills": ["emergency_vitals_check", "elderly_care", "oxygen_administration", "fever_management"],
-    "location": { "lat": 28.5521, "lng": 77.2680 },
-    "area": "Kalkaji, New Delhi",
-    "languages": ["Hindi", "English"],
-    "rating": 4.85,
-    "total_reviews": 210,
-    "availability_slots": ["today_14:00", "today_16:00", "today_18:30"]
+    "name": "Mohit Bisht",
+    "role": "medic",
+    "qualification": "B.Sc Nursing",
+    "gender": "M",
+    "languages": [
+      "Hindi",
+      "English",
+      "Punjabi"
+    ],
+    "skills": [
+      "vitals_monitoring",
+      "wound_dressing",
+      "catheter_care",
+      "post_surgical_care",
+      "nebulization",
+      "injection_im"
+    ],
+    "base_area": "Greater Noida",
+    "location": {
+      "lat": 28.4704,
+      "lng": 77.5004
+    },
+    "max_radius_km": 5.0,
+    "tier": "base",
+    "rating": 4.2,
+    "experience_years": 9,
+    "free_from": "09:00",
+    "free_until": "15:00",
+    "active": true
   },
   {
+    "caregiver_id": "CG_003",
     "id": "CG_003",
-    "name": "Sister Anita Thomas",
-    "role": "nurse",
-    "skills": ["wound_dressing", "iv_infusion", "catheter_care", "post_operative_care", "diabetic_monitoring"],
-    "location": { "lat": 28.5380, "lng": 77.2600 },
-    "area": "Govindpuri, New Delhi",
-    "languages": ["English", "Hindi", "Malayalam"],
-    "rating": 4.95,
-    "total_reviews": 340,
-    "availability_slots": ["today_13:30", "today_15:00", "today_17:30"]
+    "name": "Ankit Verma",
+    "role": "doctor",
+    "qualification": "MBBS",
+    "gender": "M",
+    "languages": [
+      "Hindi",
+      "Haryanvi",
+      "Punjabi"
+    ],
+    "skills": [
+      "teleconsultation",
+      "prescription",
+      "report_review"
+    ],
+    "base_area": "Greater Noida",
+    "location": {
+      "lat": 28.4647,
+      "lng": 77.5096
+    },
+    "max_radius_km": 7.0,
+    "tier": "",
+    "rating": 4.7,
+    "experience_years": 3,
+    "free_from": "09:00",
+    "free_until": "12:00",
+    "active": true
   },
   {
+    "caregiver_id": "CG_004",
     "id": "CG_004",
-    "name": "Dr. Ananya Roy",
-    "role": "specialist",
-    "specialty": "Pulmonologist",
-    "skills": ["asthma_management", "copd", "chronic_cough", "post_covid_rehab"],
-    "location": { "lat": 28.5670, "lng": 77.2430 },
-    "area": "Lajpat Nagar, New Delhi",
-    "languages": ["English", "Hindi", "Bengali"],
-    "rating": 4.92,
-    "total_reviews": 156,
-    "availability_slots": ["today_16:00", "today_18:00"]
+    "name": "Anjali Mishra",
+    "role": "phlebotomist",
+    "qualification": "DMLT",
+    "gender": "F",
+    "languages": [
+      "Hindi",
+      "Tamil",
+      "English"
+    ],
+    "skills": [
+      "sample_collection",
+      "home_phlebotomy"
+    ],
+    "base_area": "Faridabad NIT",
+    "location": {
+      "lat": 28.3688,
+      "lng": 77.3016
+    },
+    "max_radius_km": 7.0,
+    "tier": "",
+    "rating": 4.0,
+    "experience_years": 13,
+    "free_from": "10:00",
+    "free_until": "17:00",
+    "active": true
   },
   {
+    "caregiver_id": "CG_005",
     "id": "CG_005",
-    "name": "Vikram Singh",
-    "role": "paramedic_home_visit",
-    "skills": ["elderly_mobility_care", "ecg_at_home", "acute_febrile_illness", "blood_pressure_monitoring"],
-    "location": { "lat": 28.5280, "lng": 77.2850 },
-    "area": "Jasola Vihar, New Delhi",
-    "languages": ["Hindi", "Punjabi"],
-    "rating": 4.78,
-    "total_reviews": 98,
-    "availability_slots": ["today_14:30", "today_16:30"]
+    "name": "Naveen Kumar",
+    "role": "phlebotomist",
+    "qualification": "DMLT",
+    "gender": "M",
+    "languages": [
+      "Hindi",
+      "Bhojpuri",
+      "Bengali"
+    ],
+    "skills": [
+      "sample_collection",
+      "home_phlebotomy"
+    ],
+    "base_area": "Govindpuri",
+    "location": {
+      "lat": 28.5308,
+      "lng": 77.239
+    },
+    "max_radius_km": 10.0,
+    "tier": "",
+    "rating": 4.1,
+    "experience_years": 16,
+    "free_from": "09:00",
+    "free_until": "13:00",
+    "active": true
   },
   {
+    "caregiver_id": "CG_006",
     "id": "CG_006",
-    "name": "Sister Meena Kumari",
-    "role": "nurse",
-    "skills": ["injection_administration", "bedridden_patient_care", "bedsores_treatment", "wound_care"],
-    "location": { "lat": 28.5490, "lng": 77.2750 },
-    "area": "Teharkhand / Okhla, New Delhi",
-    "languages": ["Hindi"],
-    "rating": 4.88,
-    "total_reviews": 125,
-    "availability_slots": ["today_13:00", "today_15:00", "today_17:00"]
+    "name": "Neha Gupta",
+    "role": "phlebotomist",
+    "qualification": "DMLT",
+    "gender": "F",
+    "languages": [
+      "Hindi",
+      "Tamil",
+      "Haryanvi"
+    ],
+    "skills": [
+      "sample_collection",
+      "home_phlebotomy"
+    ],
+    "base_area": "Dwarka",
+    "location": {
+      "lat": 28.5807,
+      "lng": 77.0491
+    },
+    "max_radius_km": 12.0,
+    "tier": "",
+    "rating": 4.2,
+    "experience_years": 5,
+    "free_from": "14:00",
+    "free_until": "21:00",
+    "active": true
   },
   {
+    "caregiver_id": "CG_007",
     "id": "CG_007",
-    "name": "Dr. Amit Saxena",
-    "role": "gp_teleconsult",
-    "skills": ["general_opd", "fever_workup", "gastroenteritis", "hypertension_management"],
-    "location": { "lat": 28.5300, "lng": 77.2100 },
-    "area": "Saket, New Delhi",
-    "languages": ["Hindi", "English"],
-    "rating": 4.82,
-    "total_reviews": 240,
-    "availability_slots": ["today_14:00", "today_15:00", "today_16:30", "today_18:00"]
+    "name": "Rahul Yadav",
+    "role": "medic",
+    "qualification": "B.Sc Nursing",
+    "gender": "M",
+    "languages": [
+      "Hindi",
+      "Bhojpuri"
+    ],
+    "skills": [
+      "nebulization",
+      "vitals_monitoring",
+      "injection_im",
+      "elderly_care",
+      "post_surgical_care",
+      "sample_collection",
+      "wound_dressing"
+    ],
+    "base_area": "Rohini",
+    "location": {
+      "lat": 28.7492,
+      "lng": 77.108
+    },
+    "max_radius_km": 10.0,
+    "tier": "standard",
+    "rating": 4.3,
+    "experience_years": 9,
+    "free_from": "13:00",
+    "free_until": "16:00",
+    "active": false
   },
   {
+    "caregiver_id": "CG_008",
     "id": "CG_008",
-    "name": "Dr. Sunita Kapoor",
-    "role": "specialist",
-    "specialty": "Cardiologist",
-    "skills": ["cardiovascular_assessment", "post_angioplasty_followup", "arrhythmia_eval", "lipid_management"],
-    "location": { "lat": 28.5580, "lng": 77.2550 },
-    "area": "Nehru Place, New Delhi",
-    "languages": ["Hindi", "English", "Punjabi"],
-    "rating": 4.96,
-    "total_reviews": 412,
-    "availability_slots": ["today_17:00", "today_19:00"]
+    "name": "Naveen Gupta",
+    "role": "doctor",
+    "qualification": "MBBS",
+    "gender": "M",
+    "languages": [
+      "Hindi",
+      "Haryanvi"
+    ],
+    "skills": [
+      "teleconsultation",
+      "prescription",
+      "report_review"
+    ],
+    "base_area": "Pitampura",
+    "location": {
+      "lat": 28.7079,
+      "lng": 77.1132
+    },
+    "max_radius_km": 10.0,
+    "tier": "",
+    "rating": 4.4,
+    "experience_years": 4,
+    "free_from": "16:00",
+    "free_until": "19:00",
+    "active": false
   },
   {
+    "caregiver_id": "CG_009",
     "id": "CG_009",
-    "name": "Sister Sunita Daniel",
-    "role": "nurse",
-    "skills": ["elderly_catheter_change", "ryles_tube_insertion", "wound_dressing", "blood_sample_collection"],
-    "location": { "lat": 28.5700, "lng": 77.2900 },
-    "area": "Sukhdev Vihar, New Delhi",
-    "languages": ["Hindi", "English"],
-    "rating": 4.89,
-    "total_reviews": 178,
-    "availability_slots": ["today_14:00", "today_16:00"]
+    "name": "Pooja Sharma",
+    "role": "phlebotomist",
+    "qualification": "DMLT",
+    "gender": "F",
+    "languages": [
+      "Hindi",
+      "Tamil"
+    ],
+    "skills": [
+      "sample_collection",
+      "home_phlebotomy"
+    ],
+    "base_area": "Noida Sec 18",
+    "location": {
+      "lat": 28.587,
+      "lng": 77.3489
+    },
+    "max_radius_km": 7.0,
+    "tier": "",
+    "rating": 4.0,
+    "experience_years": 16,
+    "free_from": "15:00",
+    "free_until": "18:00",
+    "active": false
   },
   {
+    "caregiver_id": "CG_010",
     "id": "CG_010",
-    "name": "Mohd. Farhan",
-    "role": "paramedic_home_visit",
-    "skills": ["trauma_stabilization", "vitals_triage", "home_oxygen_support", "nebulization"],
-    "location": { "lat": 28.5620, "lng": 77.2800 },
-    "area": "Jamia Nagar, New Delhi",
-    "languages": ["Hindi", "Urdu", "English"],
-    "rating": 4.84,
-    "total_reviews": 134,
-    "availability_slots": ["today_13:30", "today_15:30", "today_18:00"]
+    "name": "Pooja Rawat",
+    "role": "medic",
+    "qualification": "B.Sc Nursing",
+    "gender": "F",
+    "languages": [
+      "Hindi",
+      "Bhojpuri",
+      "Haryanvi"
+    ],
+    "skills": [
+      "catheter_care",
+      "bp_sugar_check",
+      "injection_iv",
+      "wound_dressing"
+    ],
+    "base_area": "Noida Sec 62",
+    "location": {
+      "lat": 28.6366,
+      "lng": 77.3668
+    },
+    "max_radius_km": 7.0,
+    "tier": "standard",
+    "rating": 3.8,
+    "experience_years": 2,
+    "free_from": "08:00",
+    "free_until": "15:00",
+    "active": true
   },
   {
+    "caregiver_id": "CG_011",
     "id": "CG_011",
-    "name": "Dr. Ritu Malhotra",
-    "role": "specialist",
-    "specialty": "Orthopedic & Geriatric Care",
-    "skills": ["arthritis_management", "osteoporosis", "joint_pain_rehab", "elderly_fall_prevention"],
-    "location": { "lat": 28.5200, "lng": 77.2150 },
-    "area": "Malviya Nagar, New Delhi",
-    "languages": ["Hindi", "English"],
-    "rating": 4.91,
-    "total_reviews": 290,
-    "availability_slots": ["today_15:00", "today_16:30", "today_18:30"]
+    "name": "Sunita Rawat",
+    "role": "phlebotomist",
+    "qualification": "DMLT",
+    "gender": "F",
+    "languages": [
+      "Hindi",
+      "Tamil"
+    ],
+    "skills": [
+      "sample_collection",
+      "home_phlebotomy"
+    ],
+    "base_area": "Noida Sec 18",
+    "location": {
+      "lat": 28.56,
+      "lng": 77.3253
+    },
+    "max_radius_km": 12.0,
+    "tier": "",
+    "rating": 4.8,
+    "experience_years": 7,
+    "free_from": "15:00",
+    "free_until": "19:00",
+    "active": true
   },
   {
+    "caregiver_id": "CG_012",
     "id": "CG_012",
-    "name": "Dr. Tarun Bhatia",
-    "role": "gp_teleconsult",
-    "skills": ["routine_infection", "stomach_infection", "headache_triage", "medication_renewal"],
-    "location": { "lat": 28.5800, "lng": 77.2300 },
-    "area": "Defence Colony, New Delhi",
-    "languages": ["Hindi", "English"],
-    "rating": 4.79,
-    "total_reviews": 160,
-    "availability_slots": ["today_13:00", "today_14:00", "today_16:00", "today_17:30"]
+    "name": "Kavita Das",
+    "role": "doctor",
+    "qualification": "MBBS",
+    "gender": "F",
+    "languages": [
+      "Hindi",
+      "English"
+    ],
+    "skills": [
+      "teleconsultation",
+      "prescription",
+      "report_review"
+    ],
+    "base_area": "Janakpuri",
+    "location": {
+      "lat": 28.6374,
+      "lng": 77.0641
+    },
+    "max_radius_km": 10.0,
+    "tier": "",
+    "rating": 4.8,
+    "experience_years": 4,
+    "free_from": "14:00",
+    "free_until": "21:00",
+    "active": true
+  },
+  {
+    "caregiver_id": "CG_013",
+    "id": "CG_013",
+    "name": "Neha Das",
+    "role": "medic",
+    "qualification": "GNM Nursing",
+    "gender": "F",
+    "languages": [
+      "Hindi",
+      "Bhojpuri"
+    ],
+    "skills": [
+      "nebulization",
+      "injection_im",
+      "injection_iv",
+      "post_surgical_care"
+    ],
+    "base_area": "Rohini",
+    "location": {
+      "lat": 28.726,
+      "lng": 77.0991
+    },
+    "max_radius_km": 12.0,
+    "tier": "standard",
+    "rating": 4.1,
+    "experience_years": 13,
+    "free_from": "11:00",
+    "free_until": "15:00",
+    "active": false
+  },
+  {
+    "caregiver_id": "CG_014",
+    "id": "CG_014",
+    "name": "Ankit Gupta",
+    "role": "medic",
+    "qualification": "B.Sc Nursing",
+    "gender": "M",
+    "languages": [
+      "Hindi",
+      "Punjabi",
+      "Tamil"
+    ],
+    "skills": [
+      "injection_im",
+      "nebulization",
+      "bp_sugar_check",
+      "elderly_care",
+      "wound_dressing"
+    ],
+    "base_area": "Janakpuri",
+    "location": {
+      "lat": 28.6113,
+      "lng": 77.0971
+    },
+    "max_radius_km": 12.0,
+    "tier": "standard",
+    "rating": 4.8,
+    "experience_years": 6,
+    "free_from": "08:00",
+    "free_until": "11:00",
+    "active": true
+  },
+  {
+    "caregiver_id": "CG_015",
+    "id": "CG_015",
+    "name": "Rahul Chauhan",
+    "role": "medic",
+    "qualification": "GNM Nursing",
+    "gender": "M",
+    "languages": [
+      "Hindi",
+      "Haryanvi"
+    ],
+    "skills": [
+      "bp_sugar_check",
+      "injection_iv",
+      "post_surgical_care",
+      "elderly_care"
+    ],
+    "base_area": "Saket",
+    "location": {
+      "lat": 28.5324,
+      "lng": 77.193
+    },
+    "max_radius_km": 10.0,
+    "tier": "base",
+    "rating": 4.7,
+    "experience_years": 8,
+    "free_from": "16:00",
+    "free_until": "21:00",
+    "active": true
+  },
+  {
+    "caregiver_id": "CG_016",
+    "id": "CG_016",
+    "name": "Ritu Kumar",
+    "role": "medic",
+    "qualification": "GNM Nursing",
+    "gender": "F",
+    "languages": [
+      "Hindi",
+      "English"
+    ],
+    "skills": [
+      "wound_dressing",
+      "elderly_care",
+      "injection_iv",
+      "sample_collection",
+      "bp_sugar_check",
+      "nebulization"
+    ],
+    "base_area": "Saket",
+    "location": {
+      "lat": 28.5024,
+      "lng": 77.2128
+    },
+    "max_radius_km": 10.0,
+    "tier": "standard",
+    "rating": 5.0,
+    "experience_years": 17,
+    "free_from": "10:00",
+    "free_until": "16:00",
+    "active": true
+  },
+  {
+    "caregiver_id": "CG_017",
+    "id": "CG_017",
+    "name": "Divya Verma",
+    "role": "doctor",
+    "qualification": "MBBS",
+    "gender": "F",
+    "languages": [
+      "Hindi",
+      "Bengali"
+    ],
+    "skills": [
+      "teleconsultation",
+      "prescription",
+      "report_review"
+    ],
+    "base_area": "Dwarka",
+    "location": {
+      "lat": 28.5815,
+      "lng": 77.066
+    },
+    "max_radius_km": 7.0,
+    "tier": "",
+    "rating": 4.7,
+    "experience_years": 7,
+    "free_from": "12:00",
+    "free_until": "19:00",
+    "active": true
+  },
+  {
+    "caregiver_id": "CG_018",
+    "id": "CG_018",
+    "name": "Anjali Sharma",
+    "role": "phlebotomist",
+    "qualification": "DMLT",
+    "gender": "F",
+    "languages": [
+      "Hindi",
+      "English"
+    ],
+    "skills": [
+      "sample_collection",
+      "home_phlebotomy"
+    ],
+    "base_area": "Saket",
+    "location": {
+      "lat": 28.5305,
+      "lng": 77.2235
+    },
+    "max_radius_km": 10.0,
+    "tier": "",
+    "rating": 4.0,
+    "experience_years": 15,
+    "free_from": "13:00",
+    "free_until": "17:00",
+    "active": true
+  },
+  {
+    "caregiver_id": "CG_019",
+    "id": "CG_019",
+    "name": "Rahul Verma",
+    "role": "medic",
+    "qualification": "GNM Nursing",
+    "gender": "M",
+    "languages": [
+      "Hindi",
+      "Bhojpuri"
+    ],
+    "skills": [
+      "vitals_monitoring",
+      "elderly_care",
+      "injection_im",
+      "wound_dressing"
+    ],
+    "base_area": "Dwarka",
+    "location": {
+      "lat": 28.5942,
+      "lng": 77.0632
+    },
+    "max_radius_km": 7.0,
+    "tier": "standard",
+    "rating": 4.2,
+    "experience_years": 18,
+    "free_from": "11:00",
+    "free_until": "19:00",
+    "active": true
+  },
+  {
+    "caregiver_id": "CG_020",
+    "id": "CG_020",
+    "name": "Manoj Yadav",
+    "role": "medic",
+    "qualification": "B.Sc Nursing",
+    "gender": "M",
+    "languages": [
+      "Hindi",
+      "Bhojpuri",
+      "Punjabi"
+    ],
+    "skills": [
+      "injection_iv",
+      "post_surgical_care",
+      "injection_im",
+      "nebulization",
+      "catheter_care"
+    ],
+    "base_area": "Rohini",
+    "location": {
+      "lat": 28.7532,
+      "lng": 77.0876
+    },
+    "max_radius_km": 12.0,
+    "tier": "base",
+    "rating": 4.8,
+    "experience_years": 8,
+    "free_from": "11:00",
+    "free_until": "15:00",
+    "active": true
+  },
+  {
+    "caregiver_id": "CG_021",
+    "id": "CG_021",
+    "name": "Rekha Gupta",
+    "role": "doctor",
+    "qualification": "MBBS",
+    "gender": "F",
+    "languages": [
+      "Hindi",
+      "Tamil",
+      "Haryanvi"
+    ],
+    "skills": [
+      "teleconsultation",
+      "prescription",
+      "report_review"
+    ],
+    "base_area": "Saket",
+    "location": {
+      "lat": 28.5455,
+      "lng": 77.1953
+    },
+    "max_radius_km": 5.0,
+    "tier": "",
+    "rating": 4.9,
+    "experience_years": 9,
+    "free_from": "13:00",
+    "free_until": "16:00",
+    "active": true
+  },
+  {
+    "caregiver_id": "CG_022",
+    "id": "CG_022",
+    "name": "Priya Verma",
+    "role": "phlebotomist",
+    "qualification": "DMLT",
+    "gender": "F",
+    "languages": [
+      "Hindi",
+      "Haryanvi",
+      "Tamil"
+    ],
+    "skills": [
+      "sample_collection",
+      "home_phlebotomy"
+    ],
+    "base_area": "Mayur Vihar",
+    "location": {
+      "lat": 28.602,
+      "lng": 77.3057
+    },
+    "max_radius_km": 7.0,
+    "tier": "",
+    "rating": 4.1,
+    "experience_years": 14,
+    "free_from": "09:00",
+    "free_until": "15:00",
+    "active": true
+  },
+  {
+    "caregiver_id": "CG_023",
+    "id": "CG_023",
+    "name": "Vikas Das",
+    "role": "phlebotomist",
+    "qualification": "DMLT",
+    "gender": "M",
+    "languages": [
+      "Hindi",
+      "Tamil",
+      "English"
+    ],
+    "skills": [
+      "sample_collection",
+      "home_phlebotomy"
+    ],
+    "base_area": "Saket",
+    "location": {
+      "lat": 28.5447,
+      "lng": 77.2282
+    },
+    "max_radius_km": 10.0,
+    "tier": "",
+    "rating": 4.6,
+    "experience_years": 11,
+    "free_from": "12:00",
+    "free_until": "19:00",
+    "active": true
+  },
+  {
+    "caregiver_id": "CG_024",
+    "id": "CG_024",
+    "name": "Manoj Das",
+    "role": "medic",
+    "qualification": "GNM Nursing",
+    "gender": "M",
+    "languages": [
+      "Hindi",
+      "Bhojpuri",
+      "Haryanvi"
+    ],
+    "skills": [
+      "vitals_monitoring",
+      "catheter_care",
+      "post_surgical_care",
+      "sample_collection",
+      "bp_sugar_check",
+      "elderly_care"
+    ],
+    "base_area": "Vasant Kunj",
+    "location": {
+      "lat": 28.528,
+      "lng": 77.1797
+    },
+    "max_radius_km": 12.0,
+    "tier": "standard",
+    "rating": 4.1,
+    "experience_years": 16,
+    "free_from": "13:00",
+    "free_until": "19:00",
+    "active": true
+  },
+  {
+    "caregiver_id": "CG_025",
+    "id": "CG_025",
+    "name": "Naveen Verma",
+    "role": "phlebotomist",
+    "qualification": "DMLT",
+    "gender": "M",
+    "languages": [
+      "Hindi",
+      "English",
+      "Punjabi"
+    ],
+    "skills": [
+      "sample_collection",
+      "home_phlebotomy"
+    ],
+    "base_area": "Gurugram Sec 29",
+    "location": {
+      "lat": 28.4667,
+      "lng": 77.0688
+    },
+    "max_radius_km": 7.0,
+    "tier": "",
+    "rating": 4.0,
+    "experience_years": 2,
+    "free_from": "12:00",
+    "free_until": "16:00",
+    "active": true
+  },
+  {
+    "caregiver_id": "CG_026",
+    "id": "CG_026",
+    "name": "Pawan Das",
+    "role": "medic",
+    "qualification": "GNM Nursing",
+    "gender": "M",
+    "languages": [
+      "Hindi",
+      "Punjabi",
+      "Tamil"
+    ],
+    "skills": [
+      "post_surgical_care",
+      "catheter_care",
+      "wound_dressing",
+      "bp_sugar_check"
+    ],
+    "base_area": "Noida Sec 62",
+    "location": {
+      "lat": 28.6368,
+      "lng": 77.366
+    },
+    "max_radius_km": 5.0,
+    "tier": "standard",
+    "rating": 4.9,
+    "experience_years": 4,
+    "free_from": "16:00",
+    "free_until": "21:00",
+    "active": true
+  },
+  {
+    "caregiver_id": "CG_027",
+    "id": "CG_027",
+    "name": "Ritu Chauhan",
+    "role": "doctor",
+    "qualification": "MBBS",
+    "gender": "F",
+    "languages": [
+      "Hindi",
+      "Punjabi",
+      "Bhojpuri"
+    ],
+    "skills": [
+      "teleconsultation",
+      "prescription",
+      "report_review"
+    ],
+    "base_area": "Pitampura",
+    "location": {
+      "lat": 28.6997,
+      "lng": 77.1519
+    },
+    "max_radius_km": 7.0,
+    "tier": "",
+    "rating": 4.8,
+    "experience_years": 9,
+    "free_from": "15:00",
+    "free_until": "20:00",
+    "active": true
+  },
+  {
+    "caregiver_id": "CG_028",
+    "id": "CG_028",
+    "name": "Deepak Mishra",
+    "role": "medic",
+    "qualification": "GNM Nursing",
+    "gender": "M",
+    "languages": [
+      "Hindi",
+      "Bengali",
+      "Haryanvi"
+    ],
+    "skills": [
+      "wound_dressing",
+      "catheter_care",
+      "post_surgical_care",
+      "elderly_care",
+      "injection_iv"
+    ],
+    "base_area": "Saket",
+    "location": {
+      "lat": 28.5341,
+      "lng": 77.193
+    },
+    "max_radius_km": 12.0,
+    "tier": "standard",
+    "rating": 4.5,
+    "experience_years": 14,
+    "free_from": "11:00",
+    "free_until": "14:00",
+    "active": true
+  },
+  {
+    "caregiver_id": "CG_029",
+    "id": "CG_029",
+    "name": "Meena Saini",
+    "role": "doctor",
+    "qualification": "MBBS",
+    "gender": "F",
+    "languages": [
+      "Hindi",
+      "Bhojpuri",
+      "English"
+    ],
+    "skills": [
+      "teleconsultation",
+      "prescription",
+      "report_review"
+    ],
+    "base_area": "Kalkaji",
+    "location": {
+      "lat": 28.5496,
+      "lng": 77.2727
+    },
+    "max_radius_km": 12.0,
+    "tier": "",
+    "rating": 4.8,
+    "experience_years": 14,
+    "free_from": "13:00",
+    "free_until": "18:00",
+    "active": true
+  },
+  {
+    "caregiver_id": "CG_030",
+    "id": "CG_030",
+    "name": "Pawan Singh",
+    "role": "doctor",
+    "qualification": "MBBS",
+    "gender": "M",
+    "languages": [
+      "Hindi",
+      "Tamil",
+      "Bhojpuri"
+    ],
+    "skills": [
+      "teleconsultation",
+      "prescription",
+      "report_review"
+    ],
+    "base_area": "Indirapuram",
+    "location": {
+      "lat": 28.6391,
+      "lng": 77.3468
+    },
+    "max_radius_km": 7.0,
+    "tier": "",
+    "rating": 5.0,
+    "experience_years": 18,
+    "free_from": "10:00",
+    "free_until": "16:00",
+    "active": true
+  },
+  {
+    "caregiver_id": "CG_031",
+    "id": "CG_031",
+    "name": "Rahul Bisht",
+    "role": "medic",
+    "qualification": "B.Sc Nursing",
+    "gender": "M",
+    "languages": [
+      "Hindi",
+      "Bengali"
+    ],
+    "skills": [
+      "catheter_care",
+      "sample_collection",
+      "elderly_care",
+      "wound_dressing",
+      "bp_sugar_check",
+      "post_surgical_care"
+    ],
+    "base_area": "Mayur Vihar",
+    "location": {
+      "lat": 28.5926,
+      "lng": 77.289
+    },
+    "max_radius_km": 5.0,
+    "tier": "standard",
+    "rating": 4.7,
+    "experience_years": 2,
+    "free_from": "14:00",
+    "free_until": "19:00",
+    "active": false
+  },
+  {
+    "caregiver_id": "CG_032",
+    "id": "CG_032",
+    "name": "Naveen Sharma",
+    "role": "medic",
+    "qualification": "GNM Nursing",
+    "gender": "M",
+    "languages": [
+      "Hindi",
+      "Haryanvi"
+    ],
+    "skills": [
+      "wound_dressing",
+      "sample_collection",
+      "injection_iv",
+      "vitals_monitoring",
+      "nebulization"
+    ],
+    "base_area": "Kalkaji",
+    "location": {
+      "lat": 28.5538,
+      "lng": 77.2437
+    },
+    "max_radius_km": 10.0,
+    "tier": "advanced",
+    "rating": 4.0,
+    "experience_years": 4,
+    "free_from": "15:00",
+    "free_until": "21:00",
+    "active": true
+  },
+  {
+    "caregiver_id": "CG_033",
+    "id": "CG_033",
+    "name": "Sunita Chauhan",
+    "role": "medic",
+    "qualification": "GNM Nursing",
+    "gender": "F",
+    "languages": [
+      "Hindi",
+      "Bhojpuri",
+      "Punjabi"
+    ],
+    "skills": [
+      "injection_iv",
+      "vitals_monitoring",
+      "bp_sugar_check",
+      "post_surgical_care",
+      "nebulization"
+    ],
+    "base_area": "Kalkaji",
+    "location": {
+      "lat": 28.5528,
+      "lng": 77.263
+    },
+    "max_radius_km": 12.0,
+    "tier": "standard",
+    "rating": 3.9,
+    "experience_years": 11,
+    "free_from": "08:00",
+    "free_until": "13:00",
+    "active": true
+  },
+  {
+    "caregiver_id": "CG_034",
+    "id": "CG_034",
+    "name": "Sunita Das",
+    "role": "medic",
+    "qualification": "GNM Nursing",
+    "gender": "F",
+    "languages": [
+      "Hindi",
+      "Bhojpuri"
+    ],
+    "skills": [
+      "bp_sugar_check",
+      "nebulization",
+      "sample_collection",
+      "catheter_care",
+      "post_surgical_care",
+      "vitals_monitoring"
+    ],
+    "base_area": "Faridabad NIT",
+    "location": {
+      "lat": 28.3901,
+      "lng": 77.3258
+    },
+    "max_radius_km": 7.0,
+    "tier": "advanced",
+    "rating": 3.9,
+    "experience_years": 15,
+    "free_from": "12:00",
+    "free_until": "17:00",
+    "active": true
+  },
+  {
+    "caregiver_id": "CG_035",
+    "id": "CG_035",
+    "name": "Rekha Sharma",
+    "role": "medic",
+    "qualification": "B.Sc Nursing",
+    "gender": "F",
+    "languages": [
+      "Hindi",
+      "Bengali"
+    ],
+    "skills": [
+      "vitals_monitoring",
+      "bp_sugar_check",
+      "injection_im",
+      "nebulization",
+      "injection_iv",
+      "sample_collection"
+    ],
+    "base_area": "Karol Bagh",
+    "location": {
+      "lat": 28.6668,
+      "lng": 77.1737
+    },
+    "max_radius_km": 12.0,
+    "tier": "standard",
+    "rating": 4.7,
+    "experience_years": 16,
+    "free_from": "11:00",
+    "free_until": "19:00",
+    "active": true
+  },
+  {
+    "caregiver_id": "CG_036",
+    "id": "CG_036",
+    "name": "Rahul Gupta",
+    "role": "medic",
+    "qualification": "B.Sc Nursing",
+    "gender": "M",
+    "languages": [
+      "Hindi",
+      "Bhojpuri",
+      "Haryanvi"
+    ],
+    "skills": [
+      "nebulization",
+      "elderly_care",
+      "bp_sugar_check",
+      "sample_collection",
+      "catheter_care",
+      "wound_dressing",
+      "vitals_monitoring"
+    ],
+    "base_area": "Noida Sec 18",
+    "location": {
+      "lat": 28.5657,
+      "lng": 77.3128
+    },
+    "max_radius_km": 5.0,
+    "tier": "advanced",
+    "rating": 4.2,
+    "experience_years": 18,
+    "free_from": "12:00",
+    "free_until": "16:00",
+    "active": false
+  },
+  {
+    "caregiver_id": "CG_037",
+    "id": "CG_037",
+    "name": "Manoj Saini",
+    "role": "doctor",
+    "qualification": "MBBS",
+    "gender": "M",
+    "languages": [
+      "Hindi",
+      "English",
+      "Punjabi"
+    ],
+    "skills": [
+      "teleconsultation",
+      "prescription",
+      "report_review"
+    ],
+    "base_area": "Karol Bagh",
+    "location": {
+      "lat": 28.6409,
+      "lng": 77.1946
+    },
+    "max_radius_km": 10.0,
+    "tier": "",
+    "rating": 4.0,
+    "experience_years": 1,
+    "free_from": "12:00",
+    "free_until": "16:00",
+    "active": true
+  },
+  {
+    "caregiver_id": "CG_038",
+    "id": "CG_038",
+    "name": "Amit Rawat",
+    "role": "medic",
+    "qualification": "B.Sc Nursing",
+    "gender": "M",
+    "languages": [
+      "Hindi",
+      "English",
+      "Tamil"
+    ],
+    "skills": [
+      "sample_collection",
+      "bp_sugar_check",
+      "elderly_care",
+      "injection_iv",
+      "injection_im",
+      "wound_dressing",
+      "catheter_care"
+    ],
+    "base_area": "Gurugram Sec 29",
+    "location": {
+      "lat": 28.4749,
+      "lng": 77.0429
+    },
+    "max_radius_km": 12.0,
+    "tier": "standard",
+    "rating": 4.5,
+    "experience_years": 2,
+    "free_from": "09:00",
+    "free_until": "12:00",
+    "active": true
+  },
+  {
+    "caregiver_id": "CG_039",
+    "id": "CG_039",
+    "name": "Sunita Singh",
+    "role": "doctor",
+    "qualification": "MBBS",
+    "gender": "F",
+    "languages": [
+      "Hindi",
+      "Haryanvi"
+    ],
+    "skills": [
+      "teleconsultation",
+      "prescription",
+      "report_review"
+    ],
+    "base_area": "Lajpat Nagar",
+    "location": {
+      "lat": 28.5731,
+      "lng": 77.2389
+    },
+    "max_radius_km": 12.0,
+    "tier": "",
+    "rating": 4.2,
+    "experience_years": 14,
+    "free_from": "14:00",
+    "free_until": "20:00",
+    "active": true
+  },
+  {
+    "caregiver_id": "CG_040",
+    "id": "CG_040",
+    "name": "Manoj Bisht",
+    "role": "doctor",
+    "qualification": "MBBS",
+    "gender": "M",
+    "languages": [
+      "Hindi",
+      "Punjabi"
+    ],
+    "skills": [
+      "teleconsultation",
+      "prescription",
+      "report_review"
+    ],
+    "base_area": "Noida Sec 62",
+    "location": {
+      "lat": 28.6164,
+      "lng": 77.3505
+    },
+    "max_radius_km": 7.0,
+    "tier": "",
+    "rating": 3.8,
+    "experience_years": 15,
+    "free_from": "16:00",
+    "free_until": "19:00",
+    "active": true
+  },
+  {
+    "caregiver_id": "CG_041",
+    "id": "CG_041",
+    "name": "Manoj Gupta",
+    "role": "medic",
+    "qualification": "GNM Nursing",
+    "gender": "M",
+    "languages": [
+      "Hindi",
+      "Bengali"
+    ],
+    "skills": [
+      "injection_iv",
+      "nebulization",
+      "catheter_care",
+      "elderly_care",
+      "bp_sugar_check",
+      "wound_dressing",
+      "post_surgical_care"
+    ],
+    "base_area": "Gurugram Sec 29",
+    "location": {
+      "lat": 28.4751,
+      "lng": 77.0596
+    },
+    "max_radius_km": 7.0,
+    "tier": "advanced",
+    "rating": 4.5,
+    "experience_years": 10,
+    "free_from": "09:00",
+    "free_until": "12:00",
+    "active": true
+  },
+  {
+    "caregiver_id": "CG_042",
+    "id": "CG_042",
+    "name": "Nisha Das",
+    "role": "medic",
+    "qualification": "GNM Nursing",
+    "gender": "F",
+    "languages": [
+      "Hindi",
+      "Haryanvi"
+    ],
+    "skills": [
+      "elderly_care",
+      "vitals_monitoring",
+      "injection_im",
+      "sample_collection",
+      "injection_iv",
+      "nebulization",
+      "post_surgical_care"
+    ],
+    "base_area": "Indirapuram",
+    "location": {
+      "lat": 28.642,
+      "lng": 77.3707
+    },
+    "max_radius_km": 5.0,
+    "tier": "advanced",
+    "rating": 4.0,
+    "experience_years": 17,
+    "free_from": "12:00",
+    "free_until": "19:00",
+    "active": true
+  },
+  {
+    "caregiver_id": "CG_043",
+    "id": "CG_043",
+    "name": "Sandeep Das",
+    "role": "phlebotomist",
+    "qualification": "DMLT",
+    "gender": "M",
+    "languages": [
+      "Hindi",
+      "Bengali",
+      "Tamil"
+    ],
+    "skills": [
+      "sample_collection",
+      "home_phlebotomy"
+    ],
+    "base_area": "Karol Bagh",
+    "location": {
+      "lat": 28.6721,
+      "lng": 77.1885
+    },
+    "max_radius_km": 10.0,
+    "tier": "",
+    "rating": 4.3,
+    "experience_years": 16,
+    "free_from": "09:00",
+    "free_until": "13:00",
+    "active": true
+  },
+  {
+    "caregiver_id": "CG_044",
+    "id": "CG_044",
+    "name": "Pawan Verma",
+    "role": "phlebotomist",
+    "qualification": "DMLT",
+    "gender": "M",
+    "languages": [
+      "Hindi",
+      "Haryanvi",
+      "English"
+    ],
+    "skills": [
+      "sample_collection",
+      "home_phlebotomy"
+    ],
+    "base_area": "Gurugram DLF",
+    "location": {
+      "lat": 28.4678,
+      "lng": 77.0713
+    },
+    "max_radius_km": 12.0,
+    "tier": "",
+    "rating": 3.9,
+    "experience_years": 17,
+    "free_from": "16:00",
+    "free_until": "21:00",
+    "active": true
+  },
+  {
+    "caregiver_id": "CG_045",
+    "id": "CG_045",
+    "name": "Priya Singh",
+    "role": "doctor",
+    "qualification": "MBBS",
+    "gender": "F",
+    "languages": [
+      "Hindi",
+      "Tamil",
+      "Bhojpuri"
+    ],
+    "skills": [
+      "teleconsultation",
+      "prescription",
+      "report_review"
+    ],
+    "base_area": "Indirapuram",
+    "location": {
+      "lat": 28.6442,
+      "lng": 77.393
+    },
+    "max_radius_km": 7.0,
+    "tier": "",
+    "rating": 4.7,
+    "experience_years": 10,
+    "free_from": "09:00",
+    "free_until": "12:00",
+    "active": true
+  },
+  {
+    "caregiver_id": "CG_046",
+    "id": "CG_046",
+    "name": "Manoj Verma",
+    "role": "medic",
+    "qualification": "B.Sc Nursing",
+    "gender": "M",
+    "languages": [
+      "Hindi",
+      "Bhojpuri"
+    ],
+    "skills": [
+      "post_surgical_care",
+      "sample_collection",
+      "nebulization",
+      "injection_iv",
+      "catheter_care",
+      "vitals_monitoring"
+    ],
+    "base_area": "Janakpuri",
+    "location": {
+      "lat": 28.6411,
+      "lng": 77.0946
+    },
+    "max_radius_km": 7.0,
+    "tier": "expert",
+    "rating": 4.4,
+    "experience_years": 5,
+    "free_from": "10:00",
+    "free_until": "16:00",
+    "active": true
+  },
+  {
+    "caregiver_id": "CG_047",
+    "id": "CG_047",
+    "name": "Rekha Rawat",
+    "role": "medic",
+    "qualification": "B.Sc Nursing",
+    "gender": "F",
+    "languages": [
+      "Hindi",
+      "Haryanvi",
+      "Tamil"
+    ],
+    "skills": [
+      "sample_collection",
+      "nebulization",
+      "bp_sugar_check",
+      "wound_dressing",
+      "post_surgical_care"
+    ],
+    "base_area": "Indirapuram",
+    "location": {
+      "lat": 28.6564,
+      "lng": 77.3599
+    },
+    "max_radius_km": 12.0,
+    "tier": "standard",
+    "rating": 4.2,
+    "experience_years": 7,
+    "free_from": "16:00",
+    "free_until": "21:00",
+    "active": false
+  },
+  {
+    "caregiver_id": "CG_048",
+    "id": "CG_048",
+    "name": "Pooja Das",
+    "role": "medic",
+    "qualification": "B.Sc Nursing",
+    "gender": "F",
+    "languages": [
+      "Hindi",
+      "Bhojpuri",
+      "Punjabi"
+    ],
+    "skills": [
+      "wound_dressing",
+      "nebulization",
+      "elderly_care",
+      "post_surgical_care"
+    ],
+    "base_area": "Govindpuri",
+    "location": {
+      "lat": 28.5348,
+      "lng": 77.2616
+    },
+    "max_radius_km": 5.0,
+    "tier": "standard",
+    "rating": 4.3,
+    "experience_years": 5,
+    "free_from": "09:00",
+    "free_until": "15:00",
+    "active": true
+  },
+  {
+    "caregiver_id": "CG_049",
+    "id": "CG_049",
+    "name": "Rahul Mishra",
+    "role": "doctor",
+    "qualification": "MBBS",
+    "gender": "M",
+    "languages": [
+      "Hindi",
+      "Bengali"
+    ],
+    "skills": [
+      "teleconsultation",
+      "prescription",
+      "report_review"
+    ],
+    "base_area": "Indirapuram",
+    "location": {
+      "lat": 28.6347,
+      "lng": 77.3809
+    },
+    "max_radius_km": 10.0,
+    "tier": "",
+    "rating": 4.6,
+    "experience_years": 16,
+    "free_from": "16:00",
+    "free_until": "21:00",
+    "active": true
+  },
+  {
+    "caregiver_id": "CG_050",
+    "id": "CG_050",
+    "name": "Manoj Bisht",
+    "role": "medic",
+    "qualification": "B.Sc Nursing",
+    "gender": "M",
+    "languages": [
+      "Hindi",
+      "English",
+      "Tamil"
+    ],
+    "skills": [
+      "vitals_monitoring",
+      "injection_im",
+      "nebulization",
+      "wound_dressing",
+      "sample_collection"
+    ],
+    "base_area": "Gurugram Sec 29",
+    "location": {
+      "lat": 28.4884,
+      "lng": 77.0746
+    },
+    "max_radius_km": 10.0,
+    "tier": "standard",
+    "rating": 4.1,
+    "experience_years": 14,
+    "free_from": "12:00",
+    "free_until": "17:00",
+    "active": true
+  },
+  {
+    "caregiver_id": "CG_051",
+    "id": "CG_051",
+    "name": "Sunil Verma",
+    "role": "doctor",
+    "qualification": "MBBS",
+    "gender": "M",
+    "languages": [
+      "Hindi",
+      "Punjabi"
+    ],
+    "skills": [
+      "teleconsultation",
+      "prescription",
+      "report_review"
+    ],
+    "base_area": "Vasant Kunj",
+    "location": {
+      "lat": 28.5254,
+      "lng": 77.1457
+    },
+    "max_radius_km": 10.0,
+    "tier": "",
+    "rating": 4.4,
+    "experience_years": 1,
+    "free_from": "15:00",
+    "free_until": "21:00",
+    "active": true
+  },
+  {
+    "caregiver_id": "CG_052",
+    "id": "CG_052",
+    "name": "Divya Rawat",
+    "role": "medic",
+    "qualification": "B.Sc Nursing",
+    "gender": "F",
+    "languages": [
+      "Hindi",
+      "Tamil",
+      "Bhojpuri"
+    ],
+    "skills": [
+      "vitals_monitoring",
+      "catheter_care",
+      "post_surgical_care",
+      "sample_collection",
+      "nebulization",
+      "injection_im",
+      "injection_iv"
+    ],
+    "base_area": "Rohini",
+    "location": {
+      "lat": 28.7168,
+      "lng": 77.1349
+    },
+    "max_radius_km": 10.0,
+    "tier": "standard",
+    "rating": 5.0,
+    "experience_years": 10,
+    "free_from": "14:00",
+    "free_until": "21:00",
+    "active": true
+  },
+  {
+    "caregiver_id": "CG_053",
+    "id": "CG_053",
+    "name": "Anjali Sharma",
+    "role": "doctor",
+    "qualification": "MBBS",
+    "gender": "F",
+    "languages": [
+      "Hindi",
+      "Punjabi",
+      "Haryanvi"
+    ],
+    "skills": [
+      "teleconsultation",
+      "prescription",
+      "report_review"
+    ],
+    "base_area": "Govindpuri",
+    "location": {
+      "lat": 28.5615,
+      "lng": 77.2756
+    },
+    "max_radius_km": 7.0,
+    "tier": "",
+    "rating": 4.5,
+    "experience_years": 5,
+    "free_from": "13:00",
+    "free_until": "17:00",
+    "active": true
+  },
+  {
+    "caregiver_id": "CG_054",
+    "id": "CG_054",
+    "name": "Deepak Mishra",
+    "role": "phlebotomist",
+    "qualification": "DMLT",
+    "gender": "M",
+    "languages": [
+      "Hindi",
+      "Bengali"
+    ],
+    "skills": [
+      "sample_collection",
+      "home_phlebotomy"
+    ],
+    "base_area": "Govindpuri",
+    "location": {
+      "lat": 28.5466,
+      "lng": 77.2749
+    },
+    "max_radius_km": 12.0,
+    "tier": "",
+    "rating": 4.0,
+    "experience_years": 5,
+    "free_from": "13:00",
+    "free_until": "21:00",
+    "active": true
+  },
+  {
+    "caregiver_id": "CG_055",
+    "id": "CG_055",
+    "name": "Shalini Rawat",
+    "role": "phlebotomist",
+    "qualification": "DMLT",
+    "gender": "F",
+    "languages": [
+      "Hindi",
+      "Bengali",
+      "Tamil"
+    ],
+    "skills": [
+      "sample_collection",
+      "home_phlebotomy"
+    ],
+    "base_area": "Indirapuram",
+    "location": {
+      "lat": 28.6569,
+      "lng": 77.3585
+    },
+    "max_radius_km": 5.0,
+    "tier": "",
+    "rating": 4.0,
+    "experience_years": 8,
+    "free_from": "09:00",
+    "free_until": "15:00",
+    "active": true
+  },
+  {
+    "caregiver_id": "CG_056",
+    "id": "CG_056",
+    "name": "Shalini Kumar",
+    "role": "doctor",
+    "qualification": "MBBS",
+    "gender": "F",
+    "languages": [
+      "Hindi",
+      "Bhojpuri"
+    ],
+    "skills": [
+      "teleconsultation",
+      "prescription",
+      "report_review"
+    ],
+    "base_area": "Saket",
+    "location": {
+      "lat": 28.5376,
+      "lng": 77.1817
+    },
+    "max_radius_km": 10.0,
+    "tier": "",
+    "rating": 4.5,
+    "experience_years": 12,
+    "free_from": "13:00",
+    "free_until": "21:00",
+    "active": true
+  },
+  {
+    "caregiver_id": "CG_057",
+    "id": "CG_057",
+    "name": "Sandeep Rawat",
+    "role": "medic",
+    "qualification": "B.Sc Nursing",
+    "gender": "M",
+    "languages": [
+      "Hindi",
+      "Tamil"
+    ],
+    "skills": [
+      "post_surgical_care",
+      "injection_iv",
+      "wound_dressing",
+      "injection_im",
+      "bp_sugar_check",
+      "sample_collection"
+    ],
+    "base_area": "Gurugram DLF",
+    "location": {
+      "lat": 28.4977,
+      "lng": 77.0767
+    },
+    "max_radius_km": 5.0,
+    "tier": "base",
+    "rating": 4.4,
+    "experience_years": 13,
+    "free_from": "15:00",
+    "free_until": "18:00",
+    "active": true
+  },
+  {
+    "caregiver_id": "CG_058",
+    "id": "CG_058",
+    "name": "Meena Saini",
+    "role": "doctor",
+    "qualification": "MBBS",
+    "gender": "F",
+    "languages": [
+      "Hindi",
+      "Haryanvi",
+      "Bhojpuri"
+    ],
+    "skills": [
+      "teleconsultation",
+      "prescription",
+      "report_review"
+    ],
+    "base_area": "Dwarka",
+    "location": {
+      "lat": 28.6095,
+      "lng": 77.0539
+    },
+    "max_radius_km": 10.0,
+    "tier": "",
+    "rating": 4.1,
+    "experience_years": 15,
+    "free_from": "12:00",
+    "free_until": "15:00",
+    "active": false
+  },
+  {
+    "caregiver_id": "CG_059",
+    "id": "CG_059",
+    "name": "Naveen Kumar",
+    "role": "phlebotomist",
+    "qualification": "DMLT",
+    "gender": "M",
+    "languages": [
+      "Hindi",
+      "Bhojpuri"
+    ],
+    "skills": [
+      "sample_collection",
+      "home_phlebotomy"
+    ],
+    "base_area": "Greater Noida",
+    "location": {
+      "lat": 28.4921,
+      "lng": 77.5104
+    },
+    "max_radius_km": 5.0,
+    "tier": "",
+    "rating": 4.9,
+    "experience_years": 15,
+    "free_from": "12:00",
+    "free_until": "16:00",
+    "active": true
+  },
+  {
+    "caregiver_id": "CG_060",
+    "id": "CG_060",
+    "name": "Amit Kumar",
+    "role": "medic",
+    "qualification": "GNM Nursing",
+    "gender": "M",
+    "languages": [
+      "Hindi",
+      "English"
+    ],
+    "skills": [
+      "catheter_care",
+      "elderly_care",
+      "wound_dressing",
+      "post_surgical_care",
+      "vitals_monitoring"
+    ],
+    "base_area": "Noida Sec 18",
+    "location": {
+      "lat": 28.592,
+      "lng": 77.3407
+    },
+    "max_radius_km": 7.0,
+    "tier": "expert",
+    "rating": 4.4,
+    "experience_years": 6,
+    "free_from": "08:00",
+    "free_until": "13:00",
+    "active": true
   }
 ]
