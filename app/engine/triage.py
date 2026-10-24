@@ -115,13 +115,27 @@ def classify_triage(
 
 def classify_routine_care(user_input: str) -> dict:
     """
-    Standard interface used by evaluate.py benchmark evaluator.
-    Returns: {"care_type": str, "urgency": str, "reasoning": str}
+    Standard interface used by evaluate.py and generate_predictions.py.
+    Returns: {"care_type": str, "urgency": str, "reasoning": str, "needs_follow_up": bool, "follow_up_question": Optional[str]}
     """
+    from app.engine.intake import determine_follow_up
+    follow_up = determine_follow_up(user_input, [])
+    if follow_up:
+        return {
+            "care_type": None,
+            "urgency": None,
+            "reasoning": "Intent underspecified — follow-up inquiry needed.",
+            "needs_follow_up": True,
+            "follow_up_question": follow_up
+        }
+
     care_type, urgency, reasoning = classify_triage(user_input, is_emergency=False, red_flags=[])
     return {
         "care_type": care_type,
         "urgency": urgency,
-        "reasoning": reasoning
+        "reasoning": reasoning,
+        "needs_follow_up": False,
+        "follow_up_question": None
     }
+
 
