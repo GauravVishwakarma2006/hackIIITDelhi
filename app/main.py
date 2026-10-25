@@ -112,15 +112,6 @@ def triage_endpoint(request: TriageRequest) -> TriageResponse:
     # Step 1: Zero-tolerance Clinical Red-Flag Safety Gate
     is_emergency, red_flags = detect_red_flags(user_text)
 
-    # Also inspect prior conversation turns for emerging red flags
-    if not is_emergency and request.conversation_history:
-        for turn in request.conversation_history:
-            if turn.role == "user":
-                em_check, flags_check = detect_red_flags(turn.content)
-                if em_check:
-                    is_emergency = True
-                    red_flags.extend(flags_check)
-
     if is_emergency:
         # Emergency path skips follow-ups and matching directly
         emergency_reason = get_emergency_protocol(red_flags, detected_lang)
@@ -170,12 +161,15 @@ def triage_endpoint(request: TriageRequest) -> TriageResponse:
         )
 
     # Step 4: Final Clinical Triage Classification
-    # Concatenate prior user turns with user_input so follow-up turns retain full clinical context
+    # Only concatenate prior user turn if actively answering an immediate prior follow-up clarification
     full_context = user_text
-    if request.conversation_history:
-        past_turns = " ".join([t.content for t in request.conversation_history if t.role == "user" and t.content.strip()])
-        if past_turns:
-            full_context = f"{past_turns} {user_text}"
+    if request.conversation_history and len(request.conversation_history) >= 2:
+        last_turn = request.conversation_history[-1]
+        second_last_turn = request.conversation_history[-2]
+        if last_turn.role == "assistant" and any(k in last_turn.content.lower() for k in ["help", "symptom", "service", "concern", "kiske", "किसके", "clarif"]):
+            # Active response to a clarification prompt: link the initial query
+            if second_last_turn.role == "user" and not detect_red_flags(second_last_turn.content)[0]:
+                full_context = f"{second_last_turn.content} {user_text}"
 
     # Also double check domain on full_context
     is_health_full, non_health_msg_full = check_health_domain(full_context, detected_lang)

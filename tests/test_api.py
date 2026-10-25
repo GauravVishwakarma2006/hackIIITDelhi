@@ -249,6 +249,75 @@ class TestCareCompassOfficialBenchmarks(unittest.TestCase):
             self.assertEqual(data["urgency"], "emergency", f"Expected emergency urgency for '{query}' but got {data['urgency']}")
             self.assertEqual(len(data["matched_caregivers"]), 0, f"Expected 0 caregivers for emergency '{query}'")
 
+    def test_subsequent_inputs_after_emergency_are_independent(self):
+        # Even if prior conversation turn was a critical emergency, subsequent queries MUST be triaged strictly by their own input
+        loc = {"lat": 28.5445, "lng": 77.2725}
+        
+        # Turn 1: Emergency
+        res1 = client.post("/triage", json={
+            "user_input": "seene me tez dard hai aur chakkar aa raha hai",
+            "language": "auto",
+            "location": loc,
+            "conversation_history": []
+        })
+        self.assertEqual(res1.status_code, 200)
+        self.assertEqual(res1.json()["care_type"], "emergency_112")
+        
+        # Turn 2: Paramedic home visit (bp sugar check) with emergency in conversation history
+        res2 = client.post("/triage", json={
+            "user_input": "mummy ka bp sugar ghar pe check karwana hai",
+            "language": "auto",
+            "location": loc,
+            "conversation_history": [
+                {"role": "user", "content": "seene me tez dard hai aur chakkar aa raha hai"},
+                {"role": "assistant", "content": "Emergency 112 Protocol Activated"}
+            ]
+        })
+        self.assertEqual(res2.status_code, 200)
+        data2 = res2.json()
+        self.assertEqual(data2["care_type"], "paramedic_home_visit", f"Got {data2['care_type']} instead of paramedic_home_visit")
+        self.assertEqual(data2["urgency"], "same_day")
+
+        # Turn 3: Home Nursing (Injection & dressing)
+        res3 = client.post("/triage", json={
+            "user_input": "Doctor prescribed an injection, can someone come home",
+            "language": "auto",
+            "location": loc,
+            "conversation_history": [
+                {"role": "user", "content": "seene me tez dard hai aur chakkar aa raha hai"},
+                {"role": "user", "content": "mummy ka bp sugar ghar pe check karwana hai"}
+            ]
+        })
+        self.assertEqual(res3.status_code, 200)
+        data3 = res3.json()
+        self.assertEqual(data3["care_type"], "home_nursing", f"Got {data3['care_type']} instead of home_nursing")
+
+        # Turn 4: Lab Test Home
+        res4 = client.post("/triage", json={
+            "user_input": "Book a full body checkup, home collection",
+            "language": "auto",
+            "location": loc,
+            "conversation_history": [
+                {"role": "user", "content": "seene me tez dard hai aur chakkar aa raha hai"}
+            ]
+        })
+        self.assertEqual(res4.status_code, 200)
+        data4 = res4.json()
+        self.assertEqual(data4["care_type"], "lab_test_home", f"Got {data4['care_type']} instead of lab_test_home")
+
+        # Turn 5: Teleconsultation
+        res5 = client.post("/triage", json={
+            "user_input": "Mild acidity and gas since morning, want to consult a doctor",
+            "language": "auto",
+            "location": loc,
+            "conversation_history": [
+                {"role": "user", "content": "seene me tez dard hai aur chakkar aa raha hai"}
+            ]
+        })
+        self.assertEqual(res5.status_code, 200)
+        data5 = res5.json()
+        self.assertEqual(data5["care_type"], "teleconsultation", f"Got {data5['care_type']} instead of teleconsultation")
+
 
 if __name__ == "__main__":
     unittest.main()

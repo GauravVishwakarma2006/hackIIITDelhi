@@ -1284,6 +1284,90 @@ body {
   background: #BFDBFE;
 }
 
+.gp-voice-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.gp-skip-btn {
+  background: #FEF3C7;
+  border: 1.5px solid #F59E0B;
+  color: #92400E;
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.gp-skip-btn:hover {
+  background: #FDE68A;
+  transform: translateY(-1px);
+}
+
+.gp-mute-btn {
+  background: #F1F5F9;
+  border: 1px solid #CBD5E1;
+  color: #475569;
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.gp-mute-btn:hover {
+  background: #E2E8F0;
+}
+
+.gp-mute-btn.muted {
+  background: #FEE2E2;
+  border-color: #FCA5A5;
+  color: #991B1B;
+}
+
+.gp-action-card.skip-card {
+  border: 2px dashed #94A3B8;
+  background: #FAF8F5;
+}
+
+.gp-action-card.skip-card:hover {
+  background: #F1F5F9;
+  border-color: var(--primary);
+  transform: translateY(-2px);
+}
+
+.tts-stop-btn {
+  background: #F8FAFC;
+  border: 1px solid #CBD5E1;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+}
+
+.tts-stop-btn:hover {
+  background: #FEE2E2;
+  border-color: #FCA5A5;
+  color: #991B1B;
+}
+
 /* Step Title */
 .gp-screen-title {
   font-size: 22px;

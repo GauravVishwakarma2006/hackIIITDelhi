@@ -71,8 +71,8 @@ RED_FLAG_PATTERNS = {
     "chest_pain": [
         "chest pain", "chestpain", "seene me dard", "सीने में दर्द", "chhati me dard", "छाती में दर्द",
         "heart attack", "heart attck", "heartattack", "heart attak", "hart attack", "hart attck", "heartattck",
-        "cardiac arrest", "cardiac emergency", "cardiac", "angina", "heart pain", "heart failure",
-        "heart problem", "severe chest", "dil ka daura", "हार्ट अटैक", "दिल का दौरा"
+        "cardiac arrest", "cardiac emergency", "angina", "heart pain", "heart failure",
+        "severe chest", "dil ka daura", "हार्ट अटैक", "दिल का दौरा"
     ],
     "breathing_difficulty": [
         "breathlessness", "saans nahi", "saans phool", "सांस नहीं", "can't breathe", "cant breathe",
@@ -81,7 +81,8 @@ RED_FLAG_PATTERNS = {
     ],
     "severe_bleeding": [
         "severe bleeding", "heavy bleeding", "bleeding profusely", "vomiting blood", "coughing blood",
-        "bleeding", "khoon", "खून", "khoon ki ulti", "khoon nahi ruk"
+        "profuse bleeding", "uncontrolled bleeding", "khoon ki ulti", "khoon nahi ruk", "khoon ruk nahi",
+        "khoon beh raha", "khoon nikal raha", "खून की उल्टी", "खून रुक नहीं", "खून बह रहा", "रक्त बह रहा", "रक्तस्राव"
     ],
     "unconsciousness": [
         "unconscious", "unresponsive", "passed out", "fainted", "fainting", "collapsed", "not responding",
@@ -140,6 +141,20 @@ def detect_red_flags(text: str) -> Tuple[bool, List[str]]:
                 if kw in clean_text:
                     detected_flags.append(category)
                     break
+
+    # Exclude lab test and sample requests from false-positive bleeding flags
+    if "severe_bleeding" in detected_flags:
+        is_lab_test = any(k in clean_text for k in ["jaanch", "जांच", "test", "टेस्ट", "sample", "सैंपल", "cbc", "collection", "sugar", "report"])
+        has_bleeding_symptom = any(k in clean_text for k in ["ruk nahi", "nahi ruk", "ulti", "beh", "nikal", "heavy", "profuse", "accident", "chot", "wound", "रुक नहीं", "उल्टी", "बह रहा"])
+        if is_lab_test and not has_bleeding_symptom:
+            detected_flags.remove("severe_bleeding")
+
+    # Exclude routine checkup / consult queries from false-positive chest_pain
+    if "chest_pain" in detected_flags:
+        is_routine_consult = any(k in clean_text for k in ["consult", "appointment", "routine", "checkup", "सलाह", "परामर्श"])
+        has_acute_distress = any(k in clean_text for k in ["tez", "severe", "pain", "dard", "attack", "arrest", "daura", "दौरा", "दर्द", "अटैक", "dabaav", "tightness", "pressure"])
+        if is_routine_consult and not has_acute_distress:
+            detected_flags.remove("chest_pain")
 
     is_emergency = len(detected_flags) > 0
     return is_emergency, list(dict.fromkeys(detected_flags))

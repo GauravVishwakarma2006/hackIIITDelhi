@@ -40,6 +40,30 @@ def classify_triage(
             f"Red-flag symptoms detected ({flags_str}); immediately routed to Emergency Helpline 112 / 108. Home care skipped."
         )
 
+    # 1.2. Emergency First-Aid & Waiting Support (e.g. while ambulance is on the way or what to do)
+    first_aid_triggers = [
+        "what should i do", "what to do", "kya karu", "kya karein", "kya kare", "क्या करें", "क्या करूं",
+        "first aid", "primary aid", "प्राथमिक उपचार", "ambulance aane tak", "until ambulance",
+        "while waiting", "give water", "water", "paani", "पानी", "aspirin", "intezaar"
+    ]
+    if any(k in text for k in first_aid_triggers) and not any(k in text for k in ["injection", "catheter", "dressing", "sample", "cbc", "sugar"]):
+        return (
+            CareType.EMERGENCY_112.value,
+            UrgencyLevel.EMERGENCY.value,
+            "Emergency First-Aid Guidance: While awaiting the 112/108 ambulance, keep the patient resting comfortably with head elevated. Loosen tight clothing around chest/neck, ensure fresh air circulation, and do not offer solid food or heavy liquids. Keep your phone line open for dispatch calls."
+        )
+
+    # 1.3. Polite Clinical Acknowledgment & Standing-by Reassurance
+    acknowledgment_triggers = [
+        "theek hai", "ok", "okay", "thank you", "thanks", "dhanyawad", "धन्यवाद", "shukriya", "शुक्रिया", "got it", "samajh gaya"
+    ]
+    if text.rstrip(".!,?") in acknowledgment_triggers or any(text.strip() == k for k in acknowledgment_triggers):
+        return (
+            CareType.TELECONSULTATION.value,
+            UrgencyLevel.SCHEDULED.value,
+            "CareCompass is actively standing by 24x7 for your safety. Feel free to state any healthcare requirement (such as home nurse visit, vitals check, blood test, or doctor consult) whenever needed."
+        )
+
     # 1.5. Explicit Virtual / Teleconsultation Request
     explicit_tele = [
         "teleconsultation", "teleconsult", "doctor appointment", "virtual consult",

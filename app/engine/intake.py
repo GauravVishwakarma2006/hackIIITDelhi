@@ -27,9 +27,6 @@ def determine_follow_up(
     """
     Returns the exact follow-up question if intent is underspecified and not yet clarified.
     """
-    if conversation_history and len(conversation_history) > 0:
-        return None  # Already answered follow-up, proceed
-
     clean = user_input.lower().strip().rstrip("?.!,")
 
     if is_underspecified(clean):

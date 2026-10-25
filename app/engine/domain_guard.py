@@ -70,7 +70,14 @@ HEALTH_VOCABULARY = [
     # Patient & Relatives Health Context
     "patient", "mareez", "मरीज", "bimar", "बीमार", "ill", "sick", "unwell", "tabiyat", "तबीयत",
     "takleef", "तकलीफ", "pareshani", "परेशानी", "elderly", "buzurg", "बुजुर्ग", "bedridden",
-    "swasthya", "स्वास्थ्य", "care", "home visit", "home care", "ghar pe"
+    "swasthya", "स्वास्थ्य", "care", "home visit", "home care", "ghar pe",
+
+    # Conversational & First Aid / Emergency Response Follow-up
+    "what should i do", "what to do", "kya karu", "kya karein", "kya kare", "क्या करें", "क्या करूं",
+    "first aid", "primary aid", "प्राथमिक उपचार", "water", "paani", "पानी", "aspirin", "resting", "aaram",
+    "आराम", "ambulance", "112", "108", "hospital", "waiting", "intezaar", "इंतजार", "theek hai",
+    "ok", "okay", "thank you", "thanks", "dhanyawad", "धन्यवाद", "shukriya", "शुक्रिया", "helpline",
+    "lying", "sitting", "lataya", "bithaya"
 ]
 
 

@@ -124,7 +124,12 @@
             <h2 id="intake-title">अपनी समस्या या जरूरत बताएं</h2>
             <p class="panel-sub" id="intake-sub">हिंदी, हिंग्लिश या अंग्रेजी में बोलें अथवा लिखें</p>
           </div>
-          <span id="voice-ready-badge" style="font-size: 12px; font-weight: 700; color: var(--primary);">🎙️ वॉइस-सक्षम</span>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <button type="button" id="reset-chat-btn" onclick="resetChatSession()" title="नया परामर्श / रीसेट" style="background: #F1F5F9; border: 1px solid #CBD5E1; color: #475569; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+              <span>🔄</span> <span id="reset-chat-label">नया परामर्श</span>
+            </button>
+            <span id="voice-ready-badge" style="font-size: 12px; font-weight: 700; color: var(--primary);">🎙️ वॉइस-सक्षम</span>
+          </div>
         </div>
 
         <!-- Chat Stream -->
@@ -195,6 +200,9 @@
               <button id="tts-btn" class="tts-trigger" onclick="speakAssessment()">
                 <span id="tts-btn-text">🔊 बोलकर सुनें</span>
               </button>
+              <button id="tts-stop-btn" type="button" class="tts-stop-btn" onclick="stopAssessmentAudio()" title="Skip / Stop Voice">
+                <span>⏹️ आवाज रोकें (Skip)</span>
+              </button>
               <a id="whatsapp-share-btn" class="whatsapp-btn hidden" target="_blank" href="#">
                 <span id="whatsapp-share-text">💬 व्हाट्सएप पर परिवार से साझा करें</span>
               </a>
@@ -213,7 +221,12 @@
             <a href="tel:112" class="call-btn" id="dispatch-112-btn">📞 112 राष्ट्रीय हेल्पलाइन</a>
             <a href="tel:108" class="call-btn alt" id="call-108-btn">🚑 108 एम्बुलेंस बुलाएं</a>
           </div>
-          <a id="emergency-whatsapp-share-btn" class="whatsapp-btn" style="background:#B91C1C; margin-top: 12px; width: 100%;" target="_blank" href="#">
+          <div style="display: flex; gap: 8px; margin-top: 10px;">
+            <button type="button" class="tts-stop-btn" onclick="stopAssessmentAudio()" style="background:#FEE2E2; border:1px solid #FCA5A5; color:#991B1B; padding: 6px 14px;">
+              <span>⏹️ आवाज बंद करें (Stop Audio)</span>
+            </button>
+          </div>
+          <a id="emergency-whatsapp-share-btn" class="whatsapp-btn" style="background:#B91C1C; margin-top: 10px; width: 100%;" target="_blank" href="#">
             <span id="emergency-whatsapp-text">🚨 परिवार को व्हाट्सएप पर आपातकालीन अलर्ट भेजें</span>
           </a>
           <!-- Async Loaded Trauma Centers -->
@@ -260,24 +273,36 @@
       </div>
 
       <div class="gp-wizard-body">
-        <!-- Voice Spoken Strip -->
+        <!-- Voice Spoken Strip with Skip & Mute Controls -->
         <div class="gp-voice-bar">
           <div class="gp-voice-text">
             <span class="gp-voice-icon-pulse">🔊</span>
             <span id="gp-voice-caption">Namaste! CareCompass mein aapka swagat hai...</span>
           </div>
-          <button type="button" class="gp-replay-btn" id="gp-replay-btn" onclick="replayGrandparentVoice()">🔊 Replay Voice</button>
+          <div class="gp-voice-actions">
+            <button type="button" class="gp-skip-btn" id="gp-skip-audio-btn" onclick="skipGrandparentAudio()" title="Skip Audio">⏭️ Skip Audio (स्किप)</button>
+            <button type="button" class="gp-mute-btn" id="gp-mute-voice-btn" onclick="toggleGrandparentMute()" title="Mute/Unmute">🔇 Mute Voice</button>
+            <button type="button" class="gp-replay-btn" id="gp-replay-btn" onclick="replayGrandparentVoice()">🔊 Replay</button>
+          </div>
         </div>
 
-        <!-- Step 0: Welcome / Opening Screen -->
+        <!-- Step 0: Welcome / Opening Screen with Instant Skip Option -->
         <div id="gp-screen-0" class="gp-screen">
           <h2 class="gp-screen-title" id="gp-screen-0-title">Namaste! CareCompass Mein Swagat Hai</h2>
-          <div class="gp-btn-grid">
+          <div class="gp-btn-grid cols-2">
             <div class="gp-action-card safe" onclick="gpGoToScreen(1)">
               <span class="card-icon">👉</span>
               <div>
                 <div class="card-title" id="gp-s0-btn-title">Screen Par Tap Karein (Start) ➔</div>
                 <div class="card-sub" id="gp-s0-btn-sub">Hum aapke liye turant doctor ya nurse bulayenge</div>
+              </div>
+            </div>
+
+            <div class="gp-action-card skip-card" onclick="skipGrandparentAudioAndStart()">
+              <span class="card-icon">⏭️</span>
+              <div>
+                <div class="card-title" id="gp-s0-skip-title">Skip Audio & Start (स्किप) ➔</div>
+                <div class="card-sub" id="gp-s0-skip-sub">Bina aawaz seedha shuru karein (No Audio Mode)</div>
               </div>
             </div>
           </div>
@@ -332,6 +357,9 @@
               <a href="tel:108" class="gp-call-btn alt" id="gp-call-108-btn">🚑 Call 108 (Ambulance)</a>
             </div>
             <a id="gp-em-whatsapp" target="_blank" href="#" class="whatsapp-btn" style="background:#B91C1C; width: 100%; justify-content:center;">🚨 Alert Family via WhatsApp</a>
+            <button type="button" onclick="gpResetWizard()" class="gp-action-card" style="margin-top: 14px; width: 100%; justify-content: center; background: #FFF; border: 1px solid #CBD5E1; font-weight: 700; color: #334155; padding: 10px; cursor: pointer;">
+              <span>🔄 Naya Rogi / Wapas Shuru Karein (Start Over)</span>
+            </button>
           </div>
         </div>
 

@@ -618,9 +618,44 @@ function applyScenario(index) {
   const dict = getDict();
   const sc = dict.scenarios[index];
   if (sc && sc.prompt) {
+    // Reset conversation history and clear any previous emergency banners so each scenario runs clean
+    conversationHistory = [];
+    if (emergencyBanner) emergencyBanner.classList.add("hidden");
     userInput.value = sc.prompt;
     handleSend();
   }
+}
+
+// Reset chat consultation session
+function resetChatSession() {
+  conversationHistory = [];
+  lastTriageData = null;
+  lastAssessmentText = "";
+
+  const welcomeRow = document.getElementById("initial-welcome-row");
+  if (chatMessages) {
+    chatMessages.innerHTML = "";
+    if (welcomeRow) {
+      chatMessages.appendChild(welcomeRow);
+    } else {
+      appendMessage("assistant", getDict().welcomeBody || "Namaste! Main CareCompass hoon. Aapko ya aapke parivar me kisko kya takleef hai?");
+    }
+  }
+
+  if (emergencyBanner) emergencyBanner.classList.add("hidden");
+  if (triageCard) triageCard.classList.add("hidden");
+  if (caregiversContainer) caregiversContainer.classList.add("hidden");
+  if (emptyState) {
+    emptyState.classList.remove("hidden");
+    const emptyTitleEl = emptyState.querySelector("h3");
+    const emptySubEl = emptyState.querySelector("p");
+    const dict = getDict();
+    if (emptyTitleEl) emptyTitleEl.textContent = dict.emptyTitle;
+    if (emptySubEl) emptySubEl.textContent = dict.emptySub;
+  }
+
+  if (userInput) userInput.value = "";
+  if (micStatus) micStatus.textContent = "";
 }
 
 // Geolocation UI Synchronization
@@ -845,8 +880,17 @@ micBtn.addEventListener("click", () => {
   }
 });
 
+let mainAudioMuted = false;
+
+function stopAssessmentAudio() {
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+  }
+}
+
 // SpeechSynthesis Read Aloud (Grandparent Accessibility)
 function speakAssessment() {
+  if (mainAudioMuted) return;
   if (!('speechSynthesis' in window)) return;
   window.speechSynthesis.cancel();
   const textToRead = lastAssessmentText || "CareCompass assessment complete.";
@@ -946,9 +990,15 @@ function appendMessage(role, text) {
 function renderResponse(data) {
   lastTriageData = data;
   const dict = getDict();
+  const traumaContainer = document.getElementById("live-trauma-container");
 
   // Case A: Follow-up question needed (Underspecified) or Domain Guard rejection
   if (data.follow_up_question) {
+    if (emergencyBanner) emergencyBanner.classList.add("hidden");
+    if (triageCard) triageCard.classList.add("hidden");
+    if (caregiversContainer) caregiversContainer.classList.add("hidden");
+    if (traumaContainer) traumaContainer.classList.add("hidden");
+
     const isDomainRejection = (data.reasoning && (data.reasoning.toLowerCase().includes("non-health") || data.reasoning.toLowerCase().includes("invalid input"))) ||
       data.follow_up_question.includes("⚠️") ||
       data.follow_up_question.toLowerCase().includes("invalid input");
@@ -960,9 +1010,6 @@ function renderResponse(data) {
       speakAssessment();
 
       // Cleanly reset the right panel to show Invalid Input message
-      emergencyBanner.classList.add("hidden");
-      caregiversContainer.classList.add("hidden");
-      triageCard.classList.add("hidden");
       emptyState.classList.remove("hidden");
 
       const emptyTitleEl = emptyState.querySelector("h3");
@@ -1008,12 +1055,18 @@ function renderResponse(data) {
     }
 
     loadLiveTraumaCenters(patientLocation.lat, patientLocation.lng);
+
+    // Clear conversation history after emergency so future inquiries start completely fresh
+    conversationHistory = [];
     return;
   }
 
   // Non-Emergency Case
   emergencyBanner.classList.add("hidden");
+  if (traumaContainer) traumaContainer.classList.add("hidden");
   triageCard.classList.remove("hidden");
+  // Final triage completed: clear conversation history so future independent queries start fresh
+  conversationHistory = [];
 
   // Localized Care Type Badge
   const careTypeLabel = dict.careTypes[data.care_type] || data.care_type.replace(/_/g, " ").toUpperCase();
@@ -1145,6 +1198,44 @@ let gpCurrentScreen = 0;
 let gpVoiceText = "";
 let gpSelectedSymptom = "";
 let gpSelectedCareType = "";
+let gpAudioMuted = false;
+
+function stopGrandparentAudio() {
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+  }
+}
+
+function skipGrandparentAudio() {
+  stopGrandparentAudio();
+  const captionEl = document.getElementById("gp-voice-caption");
+  if (captionEl) captionEl.textContent = "Audio skipped (आवाज रोक दी गई है). Kripya screen par vikalp chunein.";
+}
+
+function skipGrandparentAudioAndStart() {
+  gpAudioMuted = true;
+  stopGrandparentAudio();
+  updateMuteButtonUI();
+  gpGoToScreen(1);
+}
+
+function toggleGrandparentMute() {
+  gpAudioMuted = !gpAudioMuted;
+  if (gpAudioMuted) {
+    stopGrandparentAudio();
+  } else if (gpVoiceText) {
+    gpSpeak(gpVoiceText);
+  }
+  updateMuteButtonUI();
+}
+
+function updateMuteButtonUI() {
+  const muteBtn = document.getElementById("gp-mute-voice-btn");
+  if (muteBtn) {
+    muteBtn.innerHTML = gpAudioMuted ? "🔈 Unmute Voice" : "🔇 Mute Voice";
+    muteBtn.classList.toggle("muted", gpAudioMuted);
+  }
+}
 
 function gpSpeak(text) {
   gpVoiceText = text;
@@ -1153,6 +1244,9 @@ function gpSpeak(text) {
 
   if (!('speechSynthesis' in window)) return;
   window.speechSynthesis.cancel();
+
+  // If user muted or opted out of voice, don't speak aloud
+  if (gpAudioMuted) return;
 
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = "hi-IN"; // Native Indian Hinglish / Hindi synthesis
@@ -1163,6 +1257,10 @@ function gpSpeak(text) {
 
 function replayGrandparentVoice() {
   if (gpVoiceText) {
+    if (gpAudioMuted) {
+      gpAudioMuted = false;
+      updateMuteButtonUI();
+    }
     gpSpeak(gpVoiceText);
   }
 }
@@ -1170,15 +1268,14 @@ function replayGrandparentVoice() {
 function openGrandparentWizard() {
   const modal = document.getElementById("grandparent-wizard-modal");
   if (modal) modal.classList.remove("hidden");
+  updateMuteButtonUI();
   gpGoToScreen(0);
 }
 
 function closeGrandparentWizard() {
   const modal = document.getElementById("grandparent-wizard-modal");
   if (modal) modal.classList.add("hidden");
-  if ('speechSynthesis' in window) {
-    window.speechSynthesis.cancel();
-  }
+  stopGrandparentAudio();
 }
 
 function gpGoToScreen(screenNum) {
@@ -1267,10 +1364,8 @@ async function gpSelectDuration(durationDesc) {
       user_input: fullText,
       language: currentLanguage,
       location: patientLocation,
-      conversation_history: conversationHistory
+      conversation_history: []
     };
-
-    conversationHistory.push({ role: "user", content: fullText });
 
     const res = await fetch("/triage", {
       method: "POST",
@@ -1338,6 +1433,9 @@ async function gpSelectDuration(durationDesc) {
 function gpResetWizard() {
   gpSelectedSymptom = "";
   gpSelectedCareType = "";
+  conversationHistory = [];
+  const emEl = document.getElementById("gp-screen-emergency");
+  if (emEl) emEl.classList.add("hidden");
   gpGoToScreen(1);
 }
 
