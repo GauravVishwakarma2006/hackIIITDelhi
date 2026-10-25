@@ -34,6 +34,7 @@ class TriageRequest(BaseModel):
     conversation_history: List[ConversationTurn] = Field(default_factory=list, description="Prior conversation messages")
     proxy_mode: Optional[bool] = Field(default=False, description="Whether request is reported via family proxy")
     messenger_location: Optional[Location] = Field(default=None, description="Current coordinates of the proxy messenger")
+    observer_mode: Optional[bool] = Field(default=False, description="Whether request is reported by a third-party observer / guard")
 
 
 class MatchedCaregiver(BaseModel):
@@ -54,3 +55,19 @@ class TriageResponse(BaseModel):
     red_flags: List[str] = Field(default_factory=list, description="Identified red-flag symptoms")
     reasoning: str = Field(..., description="Clinical reasoning explaining the triage decision")
     matched_caregivers: List[MatchedCaregiver] = Field(default_factory=list, description="Ranked caregivers")
+
+
+class FeedbackRequest(BaseModel):
+    user_input: str = Field(..., description="Original user message that was triaged")
+    predicted_care_type: Optional[str] = Field(None, description="The care type that CareCompass predicted")
+    predicted_urgency: Optional[str] = Field(None, description="The urgency that CareCompass predicted")
+    rating: str = Field(..., description="'thumbs_up' or 'thumbs_down'")
+    suggested_care_type: Optional[str] = Field(None, description="User or expert suggested care type if correcting")
+    comment: Optional[str] = Field(None, description="User explanation of why or what to improve")
+    observer_mode: Optional[bool] = Field(False, description="Whether this occurred in observer mode")
+
+
+class FeedbackResponse(BaseModel):
+    status: str
+    message: str
+    learned: bool

@@ -363,6 +363,7 @@ I18N.auto = { ...I18N.Hindi };
 // Current Language State
 let currentLanguage = localStorage.getItem("carecompass_lang") || "Hindi";
 let lastTriageData = null;
+let lastTriageQuery = "";
 
 // DOM Element References
 const chatMessages = document.getElementById("chat-messages");
@@ -898,16 +899,32 @@ const fetchCurrentLocation = fetchMessengerLocation;
 function toggleObserverMode() {
   const isObs = document.getElementById("observer-mode-toggle").checked;
   const senderCoords = document.getElementById("sender-coords-text");
+  const obsBanner = document.getElementById("observer-details-banner");
   const dict = getDict();
 
   if (isObs) {
+    if (obsBanner) obsBanner.classList.remove("hidden");
     if (senderCoords) {
       senderCoords.innerHTML = `<span style="color: #B45309; font-weight: 800;">${dict.observerLabel} Active (Welfare Reporting)</span>`;
     }
     userInput.placeholder = dict.inputPlaceholderObserver;
   } else {
+    if (obsBanner) obsBanner.classList.add("hidden");
     userInput.placeholder = dict.inputPlaceholder;
     updateLocationUI(locationStatus, messengerLocation, messengerLocation.area);
+  }
+}
+
+function applyObserverPrompt(promptText) {
+  const isObsToggle = document.getElementById("observer-mode-toggle");
+  if (isObsToggle && !isObsToggle.checked) {
+    isObsToggle.checked = true;
+    toggleObserverMode();
+  }
+  if (userInput) {
+    userInput.value = promptText;
+    userInput.focus();
+    handleSend();
   }
 }
 
@@ -1082,6 +1099,9 @@ async function handleSend() {
   if (!text) return;
   const dict = getDict();
 
+  lastTriageQuery = text;
+  const isObs = document.getElementById("observer-mode-toggle")?.checked || false;
+
   // Ensure current location of messenger is captured if needed
   const isProxy = document.getElementById("proxy-mode-toggle")?.checked || false;
   if (!locationAcquired && !isDetectingLocation) {
@@ -1108,6 +1128,7 @@ async function handleSend() {
       location: patientLocation,
       proxy_mode: isProxy,
       messenger_location: messengerLocation,
+      observer_mode: isObs,
       conversation_history: conversationHistory
     };
 
@@ -1169,6 +1190,19 @@ function renderResponse(data) {
   lastTriageData = data;
   const dict = getDict();
   const traumaContainer = document.getElementById("live-trauma-container");
+
+  // Reset Feedback component state
+  const fbStatus = document.getElementById("feedback-status-msg");
+  if (fbStatus) {
+    fbStatus.classList.add("hidden");
+    fbStatus.textContent = "";
+  }
+  const fbDrawer = document.getElementById("feedback-correction-drawer");
+  if (fbDrawer) fbDrawer.classList.add("hidden");
+  const upBtn = document.getElementById("fb-thumbs-up-btn");
+  const downBtn = document.getElementById("fb-thumbs-down-btn");
+  if (upBtn) upBtn.classList.remove("active");
+  if (downBtn) downBtn.classList.remove("active");
 
   // Case A: Follow-up question needed (Underspecified) or Domain Guard rejection
   if (data.follow_up_question) {
@@ -1397,6 +1431,113 @@ function openBookingModal(name, role, slot) {
 
 function closeModal() {
   document.getElementById("booking-modal").classList.add("hidden");
+}
+
+// ==========================================================================
+// Adaptive Continuous Learning & Real User Feedback Handlers
+// ==========================================================================
+
+function toggleCorrectionDrawer(explicitState) {
+  const drawer = document.getElementById("feedback-correction-drawer");
+  if (!drawer) return;
+  if (explicitState !== undefined) {
+    drawer.classList.toggle("hidden", !explicitState);
+  } else {
+    drawer.classList.toggle("hidden");
+  }
+  const downBtn = document.getElementById("fb-thumbs-down-btn");
+  if (downBtn && !drawer.classList.contains("hidden")) {
+    downBtn.classList.add("active");
+  } else if (downBtn) {
+    downBtn.classList.remove("active");
+  }
+}
+
+async function sendTriageFeedback(rating) {
+  const upBtn = document.getElementById("fb-thumbs-up-btn");
+  const downBtn = document.getElementById("fb-thumbs-down-btn");
+  const statusMsg = document.getElementById("feedback-status-msg");
+
+  if (rating === "thumbs_up") {
+    if (upBtn) upBtn.classList.add("active");
+    if (downBtn) downBtn.classList.remove("active");
+  }
+
+  const isObs = document.getElementById("observer-mode-toggle")?.checked || false;
+
+  try {
+    const payload = {
+      user_input: lastTriageQuery || userInput.value || "Clinical triage inquiry",
+      predicted_care_type: lastTriageData?.care_type,
+      predicted_urgency: lastTriageData?.urgency,
+      rating: rating,
+      observer_mode: isObs
+    };
+
+    const res = await fetch("/api/v1/feedback", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    if (res.ok && statusMsg) {
+      statusMsg.innerHTML = "✅ धन्यवाद! आपकी प्रतिक्रिया सुरक्षित कर ली गई है। (Feedback saved to CareCompass continuous learning).";
+      statusMsg.classList.remove("hidden");
+      setTimeout(() => {
+        statusMsg.classList.add("hidden");
+      }, 5000);
+    }
+  } catch (err) {
+    console.warn("Feedback submission error:", err);
+  }
+}
+
+async function submitCorrectionAndTrain() {
+  const correctServiceSelect = document.getElementById("feedback-correct-service");
+  const commentInput = document.getElementById("feedback-comment");
+  const statusMsg = document.getElementById("feedback-status-msg");
+  const drawer = document.getElementById("feedback-correction-drawer");
+
+  const chosenService = correctServiceSelect ? correctServiceSelect.value : "paramedic_home_visit";
+  const commentText = commentInput ? commentInput.value.trim() : "";
+  const isObs = document.getElementById("observer-mode-toggle")?.checked || false;
+
+  try {
+    const payload = {
+      user_input: lastTriageQuery || "Clinical triage inquiry",
+      predicted_care_type: lastTriageData?.care_type,
+      predicted_urgency: lastTriageData?.urgency,
+      rating: "thumbs_down",
+      suggested_care_type: chosenService,
+      comment: commentText,
+      observer_mode: isObs
+    };
+
+    const res = await fetch("/api/v1/feedback", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    if (res.ok) {
+      if (drawer) drawer.classList.add("hidden");
+      if (statusMsg) {
+        statusMsg.innerHTML = "🧠 <strong>सिखाया गया (Learned):</strong> CareCompass ने यह सुधार याद रख लिया है! भविष्य में इस प्रकार के अनुरोध पर कभी गलत सुझाव नहीं दिया जाएगा।";
+        statusMsg.classList.remove("hidden");
+      }
+
+      // Dynamically update the active response with the corrected service
+      if (lastTriageData) {
+        lastTriageData.care_type = chosenService;
+        lastTriageData.urgency = chosenService === "emergency_112" ? "emergency" : (chosenService === "lab_test_home" ? "scheduled" : "same_day");
+        lastTriageData.reasoning = `सुधार लागू: उपयोगकर्ता द्वारा सत्यापित आवश्यकता — ${chosenService.replace(/_/g, ' ').toUpperCase()}${commentText ? ` ('${commentText}')` : ''}. CareCompass ने इसे स्मृति में सुरक्षित कर लिया है।`;
+        renderResponse(lastTriageData);
+      }
+    }
+  } catch (err) {
+    console.error("Correction submission error:", err);
+    alert("सुधार सुरक्षित करने में त्रुटि हुई। कृपया पुनः प्रयास करें।");
+  }
 }
 
 // ==========================================================================

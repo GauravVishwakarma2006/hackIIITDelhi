@@ -11,11 +11,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 
-from app.schemas import TriageRequest, TriageResponse, Location
+from app.schemas import TriageRequest, TriageResponse, Location, FeedbackRequest, FeedbackResponse
 from app.engine.red_flags import detect_red_flags, get_emergency_protocol, check_observer_alert
 from app.engine.intake import determine_follow_up
 from app.engine.domain_guard import check_health_domain
 from app.engine.triage import classify_triage
+from app.engine.learned_memory import check_learned_memory, record_feedback, get_feedback_insights
 from app.matcher.ranking import rank_caregivers
 
 from app.tinyfish_agent import fetch_live_emergency_facilities
@@ -151,15 +152,49 @@ def triage_endpoint(request: TriageRequest) -> TriageResponse:
             matched_caregivers=[]
         )
 
+    # Step 1C: CareCompass Continuous Learning Memory & Correction Recall
+    # If this inquiry was previously corrected or verified, retrieve the taught outcome
+    learned = check_learned_memory(user_text, is_observer=bool(request.observer_mode))
+    if learned and not is_emergency:
+        care_type = learned["care_type"]
+        urgency = learned["urgency"]
+        learned_reason = learned["reasoning"]
+        if "CareCompass Continuous Learning" not in learned_reason:
+            learned_reason += " (CareCompass Continuous Learning: Verified from real user/expert feedback)."
+        loc = request.location
+        matched = rank_caregivers(
+            care_type=care_type,
+            patient_loc=loc,
+            detected_language=detected_lang,
+            top_k=3
+        )
+        if request.proxy_mode and request.messenger_location:
+            from app.matcher.ranking import haversine_distance
+            dist_proxy = haversine_distance(request.messenger_location.lat, request.messenger_location.lng, loc.lat, loc.lng)
+            learned_reason += f" (Family Proxy: Care matched near patient; guardian reporting from {dist_proxy:.1f} km away)."
+        return TriageResponse(
+            follow_up_question=None,
+            care_type=care_type,
+            urgency=urgency,
+            red_flags=learned.get("red_flags", []),
+            reasoning=learned_reason,
+            matched_caregivers=matched
+        )
+
     # Step 2: Observer / Guard Mode Alert (Padosi / Guard third-party distress)
     is_observer, obs_reason = check_observer_alert(user_text)
-    if is_observer:
+    welfare_distress = is_observer or (
+        request.observer_mode and any(k in user_text.lower() for k in [
+            "unresponsive", "door", "darwaza", "gate", "phone", "floor", "behosh", "halchal", "fallen", "awaaz"
+        ])
+    )
+    if welfare_distress:
         return TriageResponse(
             follow_up_question=None,
             care_type="paramedic_home_visit",
             urgency="emergency",
             red_flags=["observer_welfare_alert"],
-            reasoning=obs_reason,
+            reasoning=obs_reason or "Observer Alert: Third-party welfare distress report for isolated elder. Immediate paramedic dispatch and emergency check initiated.",
             matched_caregivers=[]
         )
 
@@ -200,7 +235,7 @@ def triage_endpoint(request: TriageRequest) -> TriageResponse:
 
     care_type, urgency, reasoning = classify_triage(full_context, is_emergency=False, red_flags=[])
 
-    # Step 4: Multi-Criteria Caregiver Matching
+    # Step 5: Multi-Criteria Caregiver Matching
     loc = request.location
     matched = rank_caregivers(
         care_type=care_type,
@@ -215,6 +250,9 @@ def triage_endpoint(request: TriageRequest) -> TriageResponse:
         dist_proxy = haversine_distance(request.messenger_location.lat, request.messenger_location.lng, loc.lat, loc.lng)
         final_reasoning = f"{reasoning} (Family Proxy: Local care matched near patient at {loc.lat:.4f}, {loc.lng:.4f}; guardian reporting from {dist_proxy:.1f} km away)."
 
+    if request.observer_mode:
+        final_reasoning += " (Observer Mode: Facilitated by third-party observer / society guard for elder care access)."
+
     return TriageResponse(
         follow_up_question=None,
         care_type=care_type,
@@ -223,6 +261,28 @@ def triage_endpoint(request: TriageRequest) -> TriageResponse:
         reasoning=final_reasoning,
         matched_caregivers=matched
     )
+
+
+@app.post("/api/v1/feedback", response_model=FeedbackResponse)
+def submit_feedback(feedback: FeedbackRequest) -> FeedbackResponse:
+    """
+    Real user feedback endpoint: logs ratings, user corrections, and automatically
+    updates CareCompass adaptive memory so errors are never repeated.
+    """
+    result = record_feedback(feedback.model_dump())
+    return FeedbackResponse(
+        status=result["status"],
+        message=result["message"],
+        learned=result["learned"]
+    )
+
+
+@app.get("/api/v1/feedback/insights")
+def feedback_insights():
+    """
+    Returns continuous improvement statistics, user feedback counts, and learned corrections.
+    """
+    return get_feedback_insights()
 
 
 # Serve Static UI Frontend

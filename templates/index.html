@@ -193,6 +193,32 @@
           </div>
         </div>
 
+        <!-- Dynamic Observer / Welfare Mode Active Banner -->
+        <div id="observer-details-banner" class="observer-banner hidden">
+          <div class="obs-banner-header">
+            <span class="obs-banner-badge">👮‍♂️ ऑब्जर्वर / गार्ड वेलफेयर मोड (Observer Mode Active)</span>
+            <span class="obs-banner-tag">🛡️ बुजुर्ग कल्याण एवं सुरक्षा रिपोर्टिंग</span>
+          </div>
+          <p class="obs-banner-sub">
+            पड़ोसी, सोसायटी गार्ड या वेलफेयर वर्कर द्वारा अकेले रहने वाले बुजुर्गों के लिए आपातकालीन रिपोर्टिंग।
+          </p>
+          <div class="obs-chips-label">त्वरित रिपोर्टिंग विकल्प (1-Tap Quick Alerts):</div>
+          <div class="obs-chips-grid">
+            <button type="button" class="obs-chip" onclick="applyObserverPrompt('दादी दरवाजा नहीं खोल रही हैं और फोन नहीं उठा रहीं, पड़ोसी रिपोर्टिंग')">
+              🚪 दरवाजा बंद / नहीं खोल रहे
+            </button>
+            <button type="button" class="obs-chip" onclick="applyObserverPrompt('बुजुर्ग जमीन पर गिरे हुए लग रहे हैं, तत्काल पैरामेडिक सहायता चाहिए, गार्ड रिपोर्टिंग')">
+              🛌 जमीन पर गिरे / बेहोश
+            </button>
+            <button type="button" class="obs-chip" onclick="applyObserverPrompt('अकेले रहने वाले बुजुर्ग दो दिन से बाहर नहीं आए, फोन बज रहा है पर कोई उत्तर नहीं')">
+              📞 फोन नहीं उठा रहे / अकेले बुजुर्ग
+            </button>
+            <button type="button" class="obs-chip" onclick="applyObserverPrompt('बुजुर्ग को डॉक्टर ने इंजेक्शन व ड्रेसिंग लिखी है, घर आकर सहायता चाहिए, पड़ोसी सहायता')">
+              🩹 बुजुर्ग के लिए होम नर्सिंग सहायता
+            </button>
+          </div>
+        </div>
+
         <!-- Voice & Input Deck -->
         <div class="input-deck">
           <button id="mic-btn" class="voice-orb" title="बोलने के लिए क्लिक करें">
@@ -242,6 +268,57 @@
               <a id="whatsapp-share-btn" class="whatsapp-btn hidden" target="_blank" href="#">
                 <span id="whatsapp-share-text">💬 व्हाट्सएप पर परिवार से साझा करें</span>
               </a>
+            </div>
+
+            <!-- Adaptive Continuous Learning & Real User Feedback Component -->
+            <div class="feedback-container" id="triage-feedback-box">
+              <div class="feedback-prompt-row">
+                <span class="feedback-prompt-label">💡 क्या यह मूल्यांकन सटीक था? (Was this accurate?)</span>
+                <div class="feedback-btn-group">
+                  <button type="button" class="feedback-btn thumbs-up" id="fb-thumbs-up-btn" onclick="sendTriageFeedback('thumbs_up')" title="Helpful & Accurate">
+                    👍 <span>सही है (Accurate)</span>
+                  </button>
+                  <button type="button" class="feedback-btn thumbs-down" id="fb-thumbs-down-btn" onclick="toggleCorrectionDrawer()" title="Suggest Improvement or Correction">
+                    👎 <span>सुझाव / सुधार दें (Correct)</span>
+                  </button>
+                </div>
+              </div>
+              
+              <!-- Interactive Correction & Adaptive Training Drawer -->
+              <div id="feedback-correction-drawer" class="correction-drawer hidden">
+                <div class="correction-title">🧠 CareCompass को सिखाएं (Continuous Self-Learning)</div>
+                <p class="correction-sub">यदि यह परिणाम सटीक नहीं था, तो सही आवश्यकता बताएं। CareCompass इसे हमेशा याद रखेगा और भविष्य में कभी गलत सुझाव नहीं देगा:</p>
+                
+                <div class="correction-form-grid">
+                  <div class="form-group">
+                    <label for="feedback-correct-service">सही सेवा (Actual Requirement):</label>
+                    <select id="feedback-correct-service" class="correction-select">
+                      <option value="paramedic_home_visit">🚑 पैरामेडिक होम विजिट (Paramedic Home Visit)</option>
+                      <option value="emergency_112">🚨 आपातकालीन 112 / एम्बुलेंस 108 (Emergency 112)</option>
+                      <option value="home_nursing">🩹 होम नर्सिंग (Home Nursing / Injection / Dressing)</option>
+                      <option value="lab_test_home">🧪 लैब टेस्ट होम (Lab Sample Collection)</option>
+                      <option value="teleconsultation">👨‍⚕️ डॉक्टर टेली-परामर्श (Doctor Teleconsultation)</option>
+                    </select>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="feedback-comment">सुधार का कारण / विवरण (Why / Observation Details):</label>
+                    <input type="text" id="feedback-comment" class="correction-input" placeholder="e.g. बुजुर्ग बेहोश हैं / इंजेक्शन व ड्रेसिंग चाहिए..." />
+                  </div>
+                </div>
+
+                <div class="correction-action-row">
+                  <button type="button" class="btn-train-memory" onclick="submitCorrectionAndTrain()">
+                    <span>💾 सुधार सुरक्षित करें व सिखाएं (Save & Train Memory)</span>
+                  </button>
+                  <button type="button" class="btn-cancel-correction" onclick="toggleCorrectionDrawer(false)">
+                    रद्द करें (Cancel)
+                  </button>
+                </div>
+              </div>
+
+              <!-- Feedback Confirmation Alert -->
+              <div id="feedback-status-msg" class="feedback-status hidden"></div>
             </div>
           </div>
         </div>

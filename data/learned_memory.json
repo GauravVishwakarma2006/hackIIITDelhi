@@ -1,0 +1,16 @@
+{
+  "version": "1.0",
+  "last_updated": 1792896449.766998,
+  "corrections": {
+    "special elder routine checkup and blood pressure reading test": {
+      "original_query": "special elder routine checkup and blood pressure reading test",
+      "care_type": "paramedic_home_visit",
+      "urgency": "same_day",
+      "reasoning": "User/Expert verified requirement: Paramedic Home Visit (same_day). User insight: 'Patient is elderly and bedridden; vitals check must be done at home by paramedic'.",
+      "is_observer": false,
+      "source": "user_correction",
+      "feedback_count": 2,
+      "last_updated": 1792896449.766998
+    }
+  }
+}

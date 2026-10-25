@@ -120,5 +120,71 @@ class TestConversationalFlow(unittest.TestCase):
         self.assertIn("lng", data)
         self.assertIn("area", data)
 
+    def test_observer_mode_welfare_dispatch(self):
+        # 1. Observer distress report (e.g., neighbor/guard reporting locked door)
+        res1 = self.client.post("/triage", json={
+            "user_input": "Dadi darwaza nahi khol rahi hain aur phone nahi utha rahi hain, padosi reporting",
+            "language": "auto",
+            "location": self.loc,
+            "observer_mode": True,
+            "conversation_history": []
+        })
+        self.assertEqual(res1.status_code, 200)
+        d1 = res1.json()
+        self.assertEqual(d1["care_type"], "paramedic_home_visit")
+        self.assertEqual(d1["urgency"], "emergency")
+        self.assertIn("observer_welfare_alert", d1["red_flags"])
+
+        # 2. Observer mode reporting home nursing request for elder
+        res2 = self.client.post("/triage", json={
+            "user_input": "Elderly neighbor needs wound dressing assistance, guard assisting",
+            "language": "auto",
+            "location": self.loc,
+            "observer_mode": True,
+            "conversation_history": []
+        })
+        self.assertEqual(res2.status_code, 200)
+        d2 = res2.json()
+        self.assertEqual(d2["care_type"], "home_nursing")
+        self.assertIn("Observer Mode", d2["reasoning"])
+
+    def test_continuous_learning_and_correction_recall(self):
+        # Unique test query
+        custom_query = "special elder routine checkup and blood pressure reading test"
+        
+        # 1. Post feedback to teach the system a verified correction
+        feedback_res = self.client.post("/api/v1/feedback", json={
+            "user_input": custom_query,
+            "predicted_care_type": "teleconsultation",
+            "predicted_urgency": "same_day",
+            "rating": "thumbs_down",
+            "suggested_care_type": "paramedic_home_visit",
+            "comment": "Patient is elderly and bedridden; vitals check must be done at home by paramedic",
+            "observer_mode": False
+        })
+        self.assertEqual(feedback_res.status_code, 200)
+        fb_data = feedback_res.json()
+        self.assertTrue(fb_data["learned"])
+
+        # 2. Subsequent inquiry with the exact same query MUST recall the learned correction!
+        recall_res = self.client.post("/triage", json={
+            "user_input": custom_query,
+            "language": "auto",
+            "location": self.loc,
+            "conversation_history": []
+        })
+        self.assertEqual(recall_res.status_code, 200)
+        rec_data = recall_res.json()
+        self.assertEqual(rec_data["care_type"], "paramedic_home_visit")
+        self.assertIn("Continuous Learning", rec_data["reasoning"])
+
+    def test_feedback_insights_endpoint(self):
+        res = self.client.get("/api/v1/feedback/insights")
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertIn("total_feedbacks", data)
+        self.assertIn("learned_corrections_count", data)
+        self.assertGreaterEqual(data["total_feedbacks"], 1)
+
 if __name__ == "__main__":
     unittest.main()
