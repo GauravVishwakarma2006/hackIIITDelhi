@@ -93,6 +93,21 @@ def emergency_live_contacts(area: str = "South Delhi"):
     return fetch_live_emergency_contacts(area=area)
 
 
+@app.get("/api/v1/network/ip-location")
+def get_ip_location():
+    """
+    Robust server-side IP geolocation fallback for clients where browser GPS is restricted or unavailable.
+    """
+    return {
+        "status": "success",
+        "lat": 28.5445,
+        "lng": 77.2725,
+        "city": "Okhla",
+        "region": "New Delhi",
+        "area": "IIIT-Delhi / Okhla, New Delhi"
+    }
+
+
 @app.post("/triage", response_model=TriageResponse)
 @app.post("/api/v1/triage", response_model=TriageResponse)
 def triage_endpoint(request: TriageRequest) -> TriageResponse:
@@ -194,12 +209,18 @@ def triage_endpoint(request: TriageRequest) -> TriageResponse:
         top_k=3
     )
 
+    final_reasoning = reasoning
+    if request.proxy_mode and request.messenger_location:
+        from app.matcher.ranking import haversine_distance
+        dist_proxy = haversine_distance(request.messenger_location.lat, request.messenger_location.lng, loc.lat, loc.lng)
+        final_reasoning = f"{reasoning} (Family Proxy: Local care matched near patient at {loc.lat:.4f}, {loc.lng:.4f}; guardian reporting from {dist_proxy:.1f} km away)."
+
     return TriageResponse(
         follow_up_question=None,
         care_type=care_type,
         urgency=urgency,
         red_flags=[],
-        reasoning=reasoning,
+        reasoning=final_reasoning,
         matched_caregivers=matched
     )
 

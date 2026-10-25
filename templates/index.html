@@ -30,15 +30,32 @@
           <label for="proxy-mode-toggle" class="proxy-label" id="proxy-label">👨‍👩‍👧 फैमिली प्रॉक्सी</label>
         </div>
         <div id="proxy-location-container" class="proxy-location-drawer hidden">
-          <label id="proxy-location-label" style="font-size: 11.5px; font-weight: 700; color: var(--primary);">मरीज़ का स्थान:</label>
+          <label id="proxy-location-label" style="font-size: 11.5px; font-weight: 700; color: #0369A1;">👵 मरीज़ का स्थान (Care Target):</label>
           <select id="proxy-location-select" onchange="changePatientLocation()">
-            <option value="28.5445,77.2725">📍 IIIT-Delhi / Okhla (South-East)</option>
-            <option value="28.5324,77.1930">📍 Saket (South Delhi)</option>
-            <option value="28.5807,77.0491">📍 Dwarka (West Delhi)</option>
-            <option value="28.6374,77.0641">📍 Janakpuri (West Delhi)</option>
-            <option value="28.7492,77.1080">📍 Rohini (North Delhi)</option>
-            <option value="28.5870,77.3489">📍 Noida Sec 18 (NCR)</option>
+            <option value="28.5445,77.2725" selected>📍 IIIT-Delhi / Okhla (South-East Delhi)</option>
+            <option value="28.5244,77.2066">📍 Saket / Malviya Nagar (South Delhi)</option>
+            <option value="28.5494,77.2001">📍 Hauz Khas / Green Park (South Delhi)</option>
+            <option value="28.5293,77.1539">📍 Vasant Kunj / Mehrauli (South Delhi)</option>
+            <option value="28.6219,77.0878">📍 Janakpuri / Uttam Nagar (West Delhi)</option>
+            <option value="28.5823,77.0500">📍 Dwarka Sector 10 (West Delhi)</option>
+            <option value="28.6692,77.1264">📍 Punjabi Bagh / Rajouri (West Delhi)</option>
+            <option value="28.7166,77.1232">📍 Rohini Sector 14 (North Delhi)</option>
+            <option value="28.6990,77.1384">📍 Pitampura (North-West Delhi)</option>
+            <option value="28.6315,77.2167">📍 Connaught Place / Karol Bagh (Central)</option>
+            <option value="28.6095,77.2947">📍 Mayur Vihar (East Delhi)</option>
+            <option value="28.6310,77.2776">📍 Laxmi Nagar (East Delhi)</option>
+            <option value="28.5708,77.3271">📍 Noida Sector 18 / Atta (NCR)</option>
+            <option value="28.6279,77.3725">📍 Noida Sector 62 / Indirapuram (NCR)</option>
+            <option value="28.4682,77.5097">📍 Greater Noida Pari Chowk (NCR)</option>
+            <option value="28.4950,77.0895">📍 Gurugram Cyber Hub / DLF (NCR)</option>
+            <option value="28.4089,77.3178">📍 Faridabad Sector 15 (NCR)</option>
+            <option value="28.6415,77.3792">📍 Ghaziabad Vaishali (NCR)</option>
+            <option value="custom">✍️ कस्टम स्थान / Custom Location...</option>
           </select>
+          <div id="proxy-custom-input-box" class="proxy-custom-box hidden">
+            <input type="text" id="proxy-custom-input" placeholder="e.g. Lajpat Nagar or 28.57,77.24" title="Enter area name or lat,lng coordinates">
+            <button type="button" id="proxy-custom-btn" onclick="applyCustomPatientLocation()">Set</button>
+          </div>
         </div>
         <div class="location-pill clickable" id="location-pill" title="जीपीएस रिफ्रेश करें" onclick="fetchCurrentLocation(true)">
           <span class="live-beacon" id="live-beacon"></span>
@@ -148,13 +165,32 @@
         <div class="sender-location-strip" id="sender-location-strip">
           <div class="sender-loc-main">
             <span class="sender-loc-icon">📍</span>
-            <span class="sender-loc-label" id="sender-loc-label">मैसेज भेजने का स्थान:</span>
+            <span class="sender-loc-label" id="sender-loc-label">मैसेज भेजने का स्थान (Messenger):</span>
             <span class="sender-loc-value" id="sender-coords-text">स्थान खोजा जा रहा है...</span>
           </div>
           <button type="button" class="loc-detect-btn" id="loc-detect-btn" onclick="fetchCurrentLocation(true)" title="जीपीएस पहचानें">
             <span class="btn-icon">🎯</span>
             <span class="btn-text" id="loc-detect-btn-text">जीपीएस पहचानें</span>
           </button>
+        </div>
+
+        <!-- Dynamic Family Proxy Active Details Bar -->
+        <div id="proxy-details-banner" class="proxy-banner hidden">
+          <div class="proxy-banner-header">
+            <span class="proxy-banner-badge">👨‍👩‍👧 फैमिली प्रॉक्सी सक्रिय (Family Proxy Active)</span>
+            <span id="proxy-distance-tag" class="proxy-distance-tag">Calculating distance...</span>
+          </div>
+          <div class="proxy-banner-grid">
+            <div class="proxy-col">
+              <span class="proxy-col-title">👤 मैसेज भेजने वाला (Messenger / You):</span>
+              <strong id="proxy-sender-loc-display">GPS Detecting...</strong>
+            </div>
+            <div class="proxy-col-arrow">➔</div>
+            <div class="proxy-col">
+              <span class="proxy-col-title">👵 मरीज़ का स्थान (Care Dispatched To):</span>
+              <strong id="proxy-patient-loc-display" style="color: #0369A1;">IIIT-Delhi / Okhla</strong>
+            </div>
+          </div>
         </div>
 
         <!-- Voice & Input Deck -->

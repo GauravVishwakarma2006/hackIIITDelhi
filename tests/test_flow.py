@@ -91,5 +91,34 @@ class TestConversationalFlow(unittest.TestCase):
         self.assertEqual(d7["care_type"], "lab_test_home")
         self.assertNotEqual(d7["urgency"], "emergency")
 
+    def test_family_proxy_mode_routing_and_reasoning(self):
+        # Patient is in Janakpuri, guardian/messenger is reporting from Saket (~15 km away)
+        patient_loc = {"lat": 28.6219, "lng": 77.0878}
+        messenger_loc = {"lat": 28.5244, "lng": 77.2066}
+
+        res = self.client.post("/triage", json={
+            "user_input": "Mere dada ji ko ghar par injection aur dressing karwani hai",
+            "language": "auto",
+            "location": patient_loc,
+            "proxy_mode": True,
+            "messenger_location": messenger_loc,
+            "conversation_history": []
+        })
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertEqual(data["care_type"], "home_nursing")
+        self.assertIn("Family Proxy", data["reasoning"])
+        self.assertIn("guardian reporting from", data["reasoning"])
+        self.assertGreater(len(data["matched_caregivers"]), 0)
+
+    def test_network_ip_location_endpoint(self):
+        res = self.client.get("/api/v1/network/ip-location")
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertEqual(data["status"], "success")
+        self.assertIn("lat", data)
+        self.assertIn("lng", data)
+        self.assertIn("area", data)
+
 if __name__ == "__main__":
     unittest.main()

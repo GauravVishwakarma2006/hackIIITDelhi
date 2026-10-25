@@ -385,10 +385,11 @@ const caregiverList = document.getElementById("caregiver-list");
 const whatsappShareBtn = document.getElementById("whatsapp-share-btn");
 const emergencyWhatsAppBtn = document.getElementById("emergency-whatsapp-share-btn");
 
-// Conversation & Patient State
+// Conversation & Location States
 let conversationHistory = [];
-const DEFAULT_LOCATION = { lat: 28.5445, lng: 77.2725 }; // IIIT-Delhi Okhla benchmark
-let patientLocation = { ...DEFAULT_LOCATION };
+const DEFAULT_LOCATION = { lat: 28.5445, lng: 77.2725, area: "IIIT-Delhi / Okhla" };
+let messengerLocation = { ...DEFAULT_LOCATION, verified: false, area: "Okhla, New Delhi" };
+let patientLocation = { ...DEFAULT_LOCATION, area: "IIIT-Delhi / Okhla (South-East Delhi)" };
 let lastAssessmentText = "";
 let isDetectingLocation = false;
 let locationAcquired = false;
@@ -658,45 +659,18 @@ function resetChatSession() {
   if (micStatus) micStatus.textContent = "";
 }
 
-// Geolocation UI Synchronization
-function updateLocationUI(status, coords, areaName) {
-  const dict = getDict();
-  const locText = document.getElementById("location-text");
-  const senderCoords = document.getElementById("sender-coords-text");
-  const liveBeacon = document.getElementById("live-beacon");
-  const detectBtn = document.getElementById("loc-detect-btn");
-
-  const isProxy = document.getElementById("proxy-mode-toggle")?.checked;
-  if (isProxy) {
-    if (senderCoords) {
-      senderCoords.innerHTML = `<span style="color: #0369A1;">${dict.proxyLabel} (${document.getElementById("proxy-location-select")?.selectedOptions[0]?.text || "Selected"})</span>`;
-    }
-    return;
-  }
-
-  if (status === "detecting") {
-    if (locText) locText.textContent = dict.locationDetecting;
-    if (senderCoords) senderCoords.textContent = dict.locationDetecting;
-    if (liveBeacon) liveBeacon.className = "live-beacon searching";
-    if (detectBtn) detectBtn.classList.add("loading");
-    return;
-  }
-
-  if (detectBtn) detectBtn.classList.remove("loading");
-
-  if (status === "success" && coords) {
-    const latStr = coords.lat.toFixed(4);
-    const lngStr = coords.lng.toFixed(4);
-    const label = areaName ? `${areaName} (${latStr}, ${lngStr})` : `GPS: ${latStr}, ${lngStr}`;
-
-    if (locText) locText.textContent = `📍 ${label}`;
-    if (senderCoords) senderCoords.innerHTML = `<strong>${label}</strong> <span style="color:#16A34A;font-size:11px;">${dict.locationVerified}</span>`;
-    if (liveBeacon) liveBeacon.className = "live-beacon";
-  } else {
-    if (locText) locText.textContent = dict.locationDefault;
-    if (senderCoords) senderCoords.innerHTML = `<span>Okhla, New Delhi</span> <span style="color:#94A3B8;font-size:11px;">${dict.locationDefaultTag}</span>`;
-    if (liveBeacon) liveBeacon.className = "live-beacon fallback";
-  }
+// Haversine Distance Helper in Kilometers
+function calculateDistanceKm(lat1, lon1, lat2, lon2) {
+  if (lat1 === undefined || lon1 === undefined || lat2 === undefined || lon2 === undefined) return 0;
+  const R = 6371; // Earth radius in km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return Math.round(R * c * 10) / 10;
 }
 
 // Reverse Geocoding helper (OpenStreetMap Nominatim with 2s timeout)
@@ -723,60 +697,202 @@ async function reverseGeocode(lat, lng) {
   }
 }
 
-// Fetch current GPS location
-async function fetchCurrentLocation(userInitiated = false) {
+// Update Family Proxy Live Details Banner
+function updateProxyBanner() {
   const isProxy = document.getElementById("proxy-mode-toggle")?.checked;
-  if (isProxy) {
-    changePatientLocation();
-    return patientLocation;
+  const banner = document.getElementById("proxy-details-banner");
+  if (!banner) return;
+  if (!isProxy) {
+    banner.classList.add("hidden");
+    return;
+  }
+  banner.classList.remove("hidden");
+
+  const senderDisplay = document.getElementById("proxy-sender-loc-display");
+  const patientDisplay = document.getElementById("proxy-patient-loc-display");
+  const distTag = document.getElementById("proxy-distance-tag");
+
+  const mLat = messengerLocation.lat;
+  const mLng = messengerLocation.lng;
+  const pLat = patientLocation.lat;
+  const pLng = patientLocation.lng;
+
+  const distKm = calculateDistanceKm(mLat, mLng, pLat, pLng);
+
+  if (senderDisplay) {
+    const vTag = messengerLocation.verified
+      ? `<span style="color:#16A34A;font-size:11px;font-weight:600;">(Verified GPS)</span>`
+      : `<span style="color:#64748B;font-size:11px;font-weight:600;">(Detected)</span>`;
+    senderDisplay.innerHTML = `${messengerLocation.area || `${mLat.toFixed(4)}, ${mLng.toFixed(4)}`} ${vTag}`;
   }
 
-  if (!navigator.geolocation) {
-    if (userInitiated) {
-      alert("Geolocation is not supported by your browser. Using default Delhi coordinates.");
-    }
-    locationStatus = "error";
-    updateLocationUI("error", null);
-    return patientLocation;
+  if (patientDisplay) {
+    patientDisplay.innerHTML = `<strong>${patientLocation.area || `${pLat.toFixed(4)}, ${pLng.toFixed(4)}`}</strong>`;
   }
 
-  updateLocationUI("detecting");
-  isDetectingLocation = true;
-
-  return new Promise((resolve) => {
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        const lat = pos.coords.latitude;
-        const lng = pos.coords.longitude;
-        patientLocation = { lat, lng };
-        locationAcquired = true;
-        locationStatus = "success";
-        isDetectingLocation = false;
-
-        try {
-          const area = await reverseGeocode(lat, lng);
-          locationAddress = area || "";
-          updateLocationUI("success", patientLocation, area);
-        } catch {
-          updateLocationUI("success", patientLocation, null);
-        }
-        resolve(patientLocation);
-      },
-      (err) => {
-        console.warn("Geolocation permission or timeout:", err.message);
-        locationStatus = "denied";
-        isDetectingLocation = false;
-        updateLocationUI("denied", null);
-        resolve(patientLocation);
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 8000,
-        maximumAge: 30000
-      }
-    );
-  });
+  if (distTag) {
+    distTag.textContent = `${distKm} km apart · Caregiver dispatched to Patient`;
+  }
 }
+
+// Geolocation UI Synchronization
+function updateLocationUI(status, coords, areaName) {
+  const dict = getDict();
+  const locText = document.getElementById("location-text");
+  const senderCoords = document.getElementById("sender-coords-text");
+  const liveBeacon = document.getElementById("live-beacon");
+  const detectBtn = document.getElementById("loc-detect-btn");
+  const isProxy = document.getElementById("proxy-mode-toggle")?.checked;
+
+  if (detectBtn) {
+    if (status === "detecting") detectBtn.classList.add("loading");
+    else detectBtn.classList.remove("loading");
+  }
+
+  if (status === "detecting") {
+    if (locText) locText.textContent = dict.locationDetecting;
+    if (senderCoords) senderCoords.textContent = dict.locationDetecting;
+    if (liveBeacon) liveBeacon.className = "live-beacon searching";
+    return;
+  }
+
+  const effectiveCoords = coords || messengerLocation;
+  const latStr = effectiveCoords.lat ? effectiveCoords.lat.toFixed(4) : "28.5445";
+  const lngStr = effectiveCoords.lng ? effectiveCoords.lng.toFixed(4) : "77.2725";
+  const name = areaName || effectiveCoords.area || "Okhla, New Delhi";
+  const verifiedTag = effectiveCoords.verified
+    ? `<span style="color:#16A34A;font-size:11px;font-weight:600;">${dict.locationVerified}</span>`
+    : `<span style="color:#94A3B8;font-size:11px;">${dict.locationDefaultTag}</span>`;
+
+  if (isProxy) {
+    // In proxy mode, sender-location-strip displays the verified messenger location with proxy indicator
+    if (senderCoords) {
+      senderCoords.innerHTML = `<strong>${name}</strong> (${latStr}, ${lngStr}) ${verifiedTag} <span style="color:#0284C7;font-weight:700;font-size:11px;">[Proxy Reporting]</span>`;
+    }
+    updateProxyBanner();
+    return;
+  }
+
+  // Normal Direct Mode
+  if (status === "success" && coords) {
+    const label = `${name} (${latStr}, ${lngStr})`;
+    if (locText) locText.textContent = `📍 ${label}`;
+    if (senderCoords) senderCoords.innerHTML = `<strong>${label}</strong> ${verifiedTag}`;
+    if (liveBeacon) liveBeacon.className = "live-beacon";
+  } else {
+    if (locText) locText.textContent = dict.locationDefault;
+    if (senderCoords) senderCoords.innerHTML = `<span>${name} (${latStr}, ${lngStr})</span> ${verifiedTag}`;
+    if (liveBeacon) liveBeacon.className = "live-beacon fallback";
+  }
+}
+
+// Multi-Tier Robust Geolocation: GPS High Accuracy -> Normal Accuracy -> IP Geolocation Fallback
+async function fetchMessengerLocation(userInitiated = false) {
+  if (isDetectingLocation) return messengerLocation;
+  isDetectingLocation = true;
+  updateLocationUI("detecting");
+
+  const detectPosition = (options) => {
+    return new Promise((resolve, reject) => {
+      if (!navigator.geolocation) {
+        reject(new Error("Geolocation unsupported"));
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(resolve, reject, options);
+    });
+  };
+
+  let coords = null;
+  let verified = false;
+
+  // Tier 1: High Accuracy GPS (4s timeout)
+  try {
+    const pos = await detectPosition({ enableHighAccuracy: true, timeout: 4000, maximumAge: 30000 });
+    coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+    verified = true;
+  } catch (err1) {
+    // Tier 2: Low Accuracy / Cell Tower / Cached (4s timeout)
+    try {
+      const pos2 = await detectPosition({ enableHighAccuracy: false, timeout: 4000, maximumAge: 120000 });
+      coords = { lat: pos2.coords.latitude, lng: pos2.coords.longitude };
+      verified = true;
+    } catch (err2) {
+      // Tier 3: IP Geolocation API fallback (server local endpoint then external)
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2500);
+        const localRes = await fetch("/api/v1/network/ip-location", { signal: controller.signal });
+        clearTimeout(timeoutId);
+        if (localRes.ok) {
+          const localData = await localRes.json();
+          if (localData.lat && localData.lng) {
+            coords = { lat: parseFloat(localData.lat), lng: parseFloat(localData.lng) };
+            messengerLocation.area = localData.area || `${localData.city}, ${localData.region}`;
+          }
+        }
+      } catch (errLocal) {
+        try {
+          const controller2 = new AbortController();
+          const timeoutId2 = setTimeout(() => controller2.abort(), 3000);
+          const ipRes = await fetch("https://ipapi.co/json/", { signal: controller2.signal });
+          clearTimeout(timeoutId2);
+          if (ipRes.ok) {
+            const ipData = await ipRes.json();
+            if (ipData.latitude && ipData.longitude) {
+              coords = { lat: parseFloat(ipData.latitude), lng: parseFloat(ipData.longitude) };
+              messengerLocation.area = ipData.city ? `${ipData.city}, ${ipData.region || "Delhi"}` : "Delhi NCR";
+            }
+          }
+        } catch (err3) {
+          console.warn("IP Geolocation fallback unavailable:", err3);
+        }
+      }
+    }
+  }
+
+  isDetectingLocation = false;
+
+  if (coords) {
+    messengerLocation.lat = coords.lat;
+    messengerLocation.lng = coords.lng;
+    messengerLocation.verified = verified;
+    locationAcquired = true;
+    locationStatus = "success";
+
+    // Reverse geocode to get human-friendly locality
+    try {
+      const area = await reverseGeocode(coords.lat, coords.lng);
+      if (area) {
+        messengerLocation.area = area;
+      }
+    } catch (e) {}
+
+    const isProxy = document.getElementById("proxy-mode-toggle")?.checked;
+    if (!isProxy) {
+      patientLocation = { ...messengerLocation };
+    }
+
+    updateLocationUI("success", messengerLocation, messengerLocation.area);
+    updateProxyBanner();
+    return messengerLocation;
+  } else {
+    locationStatus = "default";
+    messengerLocation = { ...DEFAULT_LOCATION, area: "Okhla, New Delhi", verified: false };
+    const isProxy = document.getElementById("proxy-mode-toggle")?.checked;
+    if (!isProxy) {
+      patientLocation = { ...messengerLocation };
+    }
+    updateLocationUI("default", messengerLocation, "Okhla, New Delhi");
+    updateProxyBanner();
+    if (userInitiated) {
+      alert("GPS detection completed: using active Delhi NCR coordinates. You can also select specific zones in Family Proxy mode.");
+    }
+    return messengerLocation;
+  }
+}
+
+// Backwards-compatible alias for existing callers/buttons
+const fetchCurrentLocation = fetchMessengerLocation;
 
 // Observer & Family Proxy Mode Handlers
 function toggleObserverMode() {
@@ -791,11 +907,7 @@ function toggleObserverMode() {
     userInput.placeholder = dict.inputPlaceholderObserver;
   } else {
     userInput.placeholder = dict.inputPlaceholder;
-    if (locationAcquired) {
-      updateLocationUI("success", patientLocation, locationAddress);
-    } else {
-      fetchCurrentLocation(false);
-    }
+    updateLocationUI(locationStatus, messengerLocation, messengerLocation.area);
   }
 }
 
@@ -803,33 +915,97 @@ function toggleProxyMode() {
   const isProxy = document.getElementById("proxy-mode-toggle").checked;
   const drawer = document.getElementById("proxy-location-container");
   const locPill = document.getElementById("location-pill");
+  const banner = document.getElementById("proxy-details-banner");
 
   if (isProxy) {
-    drawer.classList.remove("hidden");
-    locPill.classList.add("hidden");
+    if (drawer) drawer.classList.remove("hidden");
+    if (locPill) locPill.classList.add("hidden");
+    if (banner) banner.classList.remove("hidden");
     changePatientLocation();
   } else {
-    drawer.classList.add("hidden");
-    locPill.classList.remove("hidden");
-    if (locationAcquired) {
-      updateLocationUI("success", patientLocation, locationAddress);
-    } else {
-      fetchCurrentLocation(false);
-    }
+    if (drawer) drawer.classList.add("hidden");
+    if (locPill) locPill.classList.remove("hidden");
+    if (banner) banner.classList.add("hidden");
+    patientLocation = { ...messengerLocation };
+    updateLocationUI(locationStatus, messengerLocation, messengerLocation.area);
   }
 }
 
 function changePatientLocation() {
   const select = document.getElementById("proxy-location-select");
+  if (!select) return;
   const val = select.value;
-  const [lat, lng] = val.split(",").map(Number);
-  patientLocation = { lat, lng };
+  const customBox = document.getElementById("proxy-custom-input-box");
 
-  const senderCoords = document.getElementById("sender-coords-text");
-  if (senderCoords) {
-    const text = select.selectedOptions[0]?.text || "Selected Location";
-    senderCoords.innerHTML = `<span style="color: #0369A1;">${text}</span>`;
+  if (val === "custom") {
+    if (customBox) customBox.classList.remove("hidden");
+    const customInp = document.getElementById("proxy-custom-input");
+    if (customInp) customInp.focus();
+    return;
+  } else {
+    if (customBox) customBox.classList.add("hidden");
   }
+
+  const parts = val.split(",");
+  if (parts.length >= 2) {
+    const lat = parseFloat(parts[0]);
+    const lng = parseFloat(parts[1]);
+    const optText = select.selectedOptions[0]?.text || "Selected Area";
+    const cleanName = optText.replace(/^[📍✍️\s]+/, "");
+    patientLocation = { lat, lng, area: cleanName };
+    updateLocationUI(locationStatus, messengerLocation, messengerLocation.area);
+    updateProxyBanner();
+  }
+}
+
+async function applyCustomPatientLocation() {
+  const input = document.getElementById("proxy-custom-input");
+  if (!input) return;
+  const raw = input.value.trim();
+  if (!raw) return;
+
+  // Check if lat,lng format
+  const coordMatch = raw.match(/^(-?\d+(\.\d+)?)\s*,\s*(-?\d+(\.\d+)?)$/);
+  if (coordMatch) {
+    const lat = parseFloat(coordMatch[1]);
+    const lng = parseFloat(coordMatch[3]);
+    let areaName = `Custom (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+    try {
+      const rev = await reverseGeocode(lat, lng);
+      if (rev) areaName = rev;
+    } catch (e) {}
+    patientLocation = { lat, lng, area: areaName };
+    updateProxyBanner();
+    return;
+  }
+
+  // Geocode address via Nominatim with Delhi NCR context
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3000);
+    const query = encodeURIComponent(`${raw}, Delhi NCR, India`);
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`, {
+      signal: controller.signal,
+      headers: { "Accept": "application/json" }
+    });
+    clearTimeout(timeoutId);
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.length > 0) {
+        const lat = parseFloat(data[0].lat);
+        const lng = parseFloat(data[0].lon);
+        patientLocation = { lat, lng, area: raw };
+        updateProxyBanner();
+        return;
+      }
+    }
+  } catch (e) {
+    console.warn("Geocoding failed for custom location:", e);
+  }
+
+  // Fallback gracefully
+  patientLocation = { ...DEFAULT_LOCATION, area: raw };
+  updateProxyBanner();
 }
 
 // Browser-Native Speech Recognition
@@ -906,12 +1082,12 @@ async function handleSend() {
   if (!text) return;
   const dict = getDict();
 
-  // Ensure current location of whoever is going to message is captured
-  const isProxy = document.getElementById("proxy-mode-toggle")?.checked;
-  if (!isProxy && !locationAcquired && !isDetectingLocation) {
+  // Ensure current location of messenger is captured if needed
+  const isProxy = document.getElementById("proxy-mode-toggle")?.checked || false;
+  if (!locationAcquired && !isDetectingLocation) {
     try {
       await Promise.race([
-        fetchCurrentLocation(false),
+        fetchMessengerLocation(false),
         new Promise((resolve) => setTimeout(resolve, 1500))
       ]);
     } catch (e) {
@@ -930,6 +1106,8 @@ async function handleSend() {
       user_input: text,
       language: currentLanguage,
       location: patientLocation,
+      proxy_mode: isProxy,
+      messenger_location: messengerLocation,
       conversation_history: conversationHistory
     };
 
@@ -1043,13 +1221,26 @@ function renderResponse(data) {
     speakAssessment();
 
     // 1-Tap WhatsApp Emergency Alert Link in Active Language
-    const emShareText = encodeURIComponent(
-      `🚨 *${dict.emergencyTitle}*\n` +
-      `GPS: (${patientLocation.lat.toFixed(4)}, ${patientLocation.lng.toFixed(4)})\n` +
-      `Protocol: Helpline 112 / Ambulance 108\n` +
-      `Details: ${localizedReasoning}\n` +
-      `Please check on them or dispatch help immediately!`
-    );
+    const isProxy = document.getElementById("proxy-mode-toggle")?.checked;
+    let emShareTextStr = "";
+    if (isProxy) {
+      const distKm = calculateDistanceKm(messengerLocation.lat, messengerLocation.lng, patientLocation.lat, patientLocation.lng);
+      emShareTextStr =
+        `🚨 *${dict.emergencyTitle} (Family Proxy Alert)*\n` +
+        `👵 *Patient Location:* ${patientLocation.area || "Patient Home"} (${patientLocation.lat.toFixed(4)}, ${patientLocation.lng.toFixed(4)})\n` +
+        `👤 *Reporting Guardian:* ${messengerLocation.area} (${messengerLocation.lat.toFixed(4)}, ${messengerLocation.lng.toFixed(4)}) · ${distKm} km away\n` +
+        `Protocol: Helpline 112 / Ambulance 108\n` +
+        `Details: ${localizedReasoning}\n` +
+        `Please dispatch immediate emergency response!`;
+    } else {
+      emShareTextStr =
+        `🚨 *${dict.emergencyTitle}*\n` +
+        `GPS: (${patientLocation.lat.toFixed(4)}, ${patientLocation.lng.toFixed(4)})\n` +
+        `Protocol: Helpline 112 / Ambulance 108\n` +
+        `Details: ${localizedReasoning}\n` +
+        `Please check on them or dispatch help immediately!`;
+    }
+    const emShareText = encodeURIComponent(emShareTextStr);
     if (emergencyWhatsAppBtn) {
       emergencyWhatsAppBtn.href = `https://wa.me/?text=${emShareText}`;
     }
@@ -1092,16 +1283,21 @@ function renderResponse(data) {
     caregiversContainer.classList.remove("hidden");
     caregiverList.innerHTML = "";
 
+    const isProxy = document.getElementById("proxy-mode-toggle")?.checked;
+
     data.matched_caregivers.forEach((cg) => {
       const card = document.createElement("div");
       card.className = "caregiver-item";
       const scorePct = Math.round(cg.score * 100);
       const roleLabel = dict.roles[cg.role] || cg.role || careTypeLabel;
+      const locationSub = isProxy
+        ? `📍 <strong>${cg.distance_km} km from Patient in ${patientLocation.area || 'Patient Home'}</strong> · ${cg.reason}`
+        : `${cg.reason}`;
 
       card.innerHTML = `
         <div class="cg-profile">
           <h4>${cg.name || cg.caregiver_id} <span class="match-score">${scorePct}% ${dict.matchScoreSuffix}</span></h4>
-          <p class="cg-justification">${cg.reason}</p>
+          <p class="cg-justification">${locationSub}</p>
         </div>
         <button class="action-book" onclick="openBookingModal('${cg.name || cg.caregiver_id}', '${roleLabel}', '${cg.available_slot}')">
           ${dict.bookBtn}
@@ -1112,14 +1308,30 @@ function renderResponse(data) {
 
     // 1-Tap WhatsApp Triage Share Link in active language
     const topCg = data.matched_caregivers[0];
-    const shareText = encodeURIComponent(
-      `🧭 *CareCompass Health Triage Summary*\n` +
-      `Service: ${careTypeLabel}\n` +
-      `Urgency: ${urgencyLabel}\n` +
-      `Reasoning: ${localizedReasoning}\n` +
-      `Top Provider: ${topCg.name || topCg.caregiver_id} (${topCg.reason})\n` +
-      `Slot: ${topCg.available_slot || "Available Today"}`
-    );
+    let shareTextStr = "";
+    if (isProxy) {
+      const distKm = calculateDistanceKm(messengerLocation.lat, messengerLocation.lng, patientLocation.lat, patientLocation.lng);
+      shareTextStr =
+        `🧭 *CareCompass Health Triage Summary (Family Proxy Mode)*\n` +
+        `👵 *Patient Target:* ${patientLocation.area || "Patient Home"} (${patientLocation.lat.toFixed(4)}, ${patientLocation.lng.toFixed(4)})\n` +
+        `👤 *Reporting Guardian:* ${messengerLocation.area} (${messengerLocation.lat.toFixed(4)}, ${messengerLocation.lng.toFixed(4)})\n` +
+        `📏 *Remote Distance:* ${distKm} km away\n` +
+        `Service: ${careTypeLabel}\n` +
+        `Urgency: ${urgencyLabel}\n` +
+        `Reasoning: ${localizedReasoning}\n` +
+        `Top Provider: ${topCg.name || topCg.caregiver_id} (${topCg.reason})\n` +
+        `Slot: ${topCg.available_slot || "Available Today"}`;
+    } else {
+      shareTextStr =
+        `🧭 *CareCompass Health Triage Summary*\n` +
+        `📍 Patient Location: (${patientLocation.lat.toFixed(4)}, ${patientLocation.lng.toFixed(4)})\n` +
+        `Service: ${careTypeLabel}\n` +
+        `Urgency: ${urgencyLabel}\n` +
+        `Reasoning: ${localizedReasoning}\n` +
+        `Top Provider: ${topCg.name || topCg.caregiver_id} (${topCg.reason})\n` +
+        `Slot: ${topCg.available_slot || "Available Today"}`;
+    }
+    const shareText = encodeURIComponent(shareTextStr);
     if (whatsappShareBtn) {
       whatsappShareBtn.href = `https://wa.me/?text=${shareText}`;
       whatsappShareBtn.classList.remove("hidden");
@@ -1164,12 +1376,19 @@ function openBookingModal(name, role, slot) {
   const dict = getDict();
   const modal = document.getElementById("booking-modal");
   const modalContent = document.getElementById("modal-content");
+  const isProxy = document.getElementById("proxy-mode-toggle")?.checked;
+
+  const locInfo = isProxy
+    ? `<p style="margin-bottom: 6px;">👵 <strong>${dict.modalLocationLabel}</strong> ${patientLocation.area || "Patient Home"} (${patientLocation.lat.toFixed(4)}, ${patientLocation.lng.toFixed(4)})</p>
+       <p style="font-size: 12px; color: #0369A1;">👤 <strong>Reported By Proxy:</strong> ${messengerLocation.area} (${messengerLocation.lat.toFixed(4)}, ${messengerLocation.lng.toFixed(4)})</p>`
+    : `<p>📍 <strong>${dict.modalLocationLabel}</strong> (${patientLocation.lat.toFixed(4)}, ${patientLocation.lng.toFixed(4)})</p>`;
+
   modalContent.innerHTML = `
     <p>${dict.modalRoutedText(name)}</p>
     <div style="margin: 16px 0; background: #F4EFE6; padding: 14px 18px; border-radius: 12px; border: 1px solid #E8E0D2;">
       <p style="margin-bottom: 6px;">🏥 <strong>${dict.modalServiceLabel}</strong> ${role}</p>
       <p style="margin-bottom: 6px;">⏰ <strong>${dict.modalSlotLabel}</strong> ${slot || "Immediate Available"}</p>
-      <p>📍 <strong>${dict.modalLocationLabel}</strong> (${patientLocation.lat.toFixed(4)}, ${patientLocation.lng.toFixed(4)})</p>
+      ${locInfo}
     </div>
     <p style="font-size: 12px; color: #78716C;">${dict.modalNotice}</p>
   `;
@@ -1333,6 +1552,7 @@ function gpTriggerEmergency(emergencyDesc) {
   if (waBtn) waBtn.href = `https://wa.me/?text=${emShareText}`;
 
   // Also notify main workstation and background trauma desks
+  const isProxy = document.getElementById("proxy-mode-toggle")?.checked || false;
   fetch("/triage", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -1340,6 +1560,8 @@ function gpTriggerEmergency(emergencyDesc) {
       user_input: emergencyDesc,
       language: currentLanguage,
       location: patientLocation,
+      proxy_mode: isProxy,
+      messenger_location: messengerLocation,
       conversation_history: []
     })
   }).then(r => r.json()).then(renderResponse).catch(console.warn);
@@ -1360,10 +1582,13 @@ async function gpSelectDuration(durationDesc) {
   gpSpeak("Kripya ek pal intezaar karein, hum aapke paas ke certified sahayak dhoond rahe hain...");
 
   try {
+    const isProxy = document.getElementById("proxy-mode-toggle")?.checked || false;
     const payload = {
       user_input: fullText,
       language: currentLanguage,
       location: patientLocation,
+      proxy_mode: isProxy,
+      messenger_location: messengerLocation,
       conversation_history: []
     };
 

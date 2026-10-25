@@ -32,6 +32,8 @@ class TriageRequest(BaseModel):
     language: Optional[str] = Field("auto", description="Language preference: 'auto', 'en', 'hi', or 'hinglish'")
     location: Optional[Location] = Field(default=Location(lat=28.5445, lng=77.2725), description="Patient GPS coordinates")
     conversation_history: List[ConversationTurn] = Field(default_factory=list, description="Prior conversation messages")
+    proxy_mode: Optional[bool] = Field(default=False, description="Whether request is reported via family proxy")
+    messenger_location: Optional[Location] = Field(default=None, description="Current coordinates of the proxy messenger")
 
 
 class MatchedCaregiver(BaseModel):
