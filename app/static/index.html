@@ -261,15 +261,20 @@
     </div>
   </div>
 
-  <!-- 1-Tap Grandparent Voice & Touch Accessible Wizard -->
-  <div id="grandparent-wizard-modal" class="gp-wizard-overlay hidden">
+  <!-- 1-Tap Grandparent Voice & Touch Accessible Wizard (Active on Start) -->
+  <div id="grandparent-wizard-modal" class="gp-wizard-overlay">
     <div class="gp-wizard-dialog">
       <div class="gp-wizard-header">
         <div class="gp-wizard-brand">
           <span class="icon">🧭</span>
           <h3 id="gp-modal-brand-title">CareCompass · 1-Tap Voice Mode</h3>
         </div>
-        <button class="gp-close-btn" onclick="closeGrandparentWizard()" title="Close">✕</button>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <button type="button" class="gp-skip-btn" onclick="closeGrandparentWizard()" title="Skip Voice Mode & Go to Chat">
+            ⏭️ Skip to Chat (स्किप करें)
+          </button>
+          <button class="gp-close-btn" onclick="closeGrandparentWizard()" title="Close">✕</button>
+        </div>
       </div>
 
       <div class="gp-wizard-body">

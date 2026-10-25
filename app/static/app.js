@@ -1439,9 +1439,25 @@ function gpResetWizard() {
   gpGoToScreen(1);
 }
 
-// Initialization on load
+// Initialization on load - 1-Tap Voice Mode starts active immediately
 document.addEventListener("DOMContentLoaded", () => {
   changeLanguage(currentLanguage);
   fetchCurrentLocation(false);
+  
+  // Auto-launch 1-Tap Voice Mode immediately when website opens
+  openGrandparentWizard();
 });
+
+// Resume voice synthesis on first click if browser restricted initial autoplay
+const resumeVoiceOnGesture = () => {
+  if ('speechSynthesis' in window && !gpAudioMuted) {
+    if (window.speechSynthesis.paused) {
+      window.speechSynthesis.resume();
+    }
+  }
+  window.removeEventListener("click", resumeVoiceOnGesture);
+  window.removeEventListener("keydown", resumeVoiceOnGesture);
+};
+window.addEventListener("click", resumeVoiceOnGesture);
+window.addEventListener("keydown", resumeVoiceOnGesture);
 
